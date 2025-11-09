@@ -45,4 +45,4 @@ Wiktor Pacak
 
 Jakub Pietrzykowski
 
-Oliwia Salewierak
+Oliwia Salwierak
