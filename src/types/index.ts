@@ -3,11 +3,19 @@ export type UserState = {
   role: "admin" | "employee" | null;
 };
 
+export type PackageStatus =
+  | "registered"
+  | "assigned"
+  | "delivered"
+  | "archived";
+
 export type Package = {
   id: string;
   trackingNumber: string;
   sender: string;
   recipient: string;
-  status: "registered" | "delivered" | "pending";
-  createdAt: Date;
+  status: PackageStatus;
+  pickupPoint: string;
+  photoUrl?: string;
+  createdAt: string;
 };

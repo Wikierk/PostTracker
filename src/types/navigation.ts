@@ -1,7 +1,12 @@
+import { NavigatorScreenParams } from "@react-navigation/native";
+import { Package } from ".";
+
 export type RootStackParamList = {
   Login: undefined;
-  AdminApp: undefined;
+  AdminApp: NavigatorScreenParams<AdminTabParamList> | undefined;
   EmployeeApp: undefined;
+  PackageForm: { scannedCode?: string } | undefined;
+  PackageDetails: { packageData: Package };
 };
 
 export type AdminTabParamList = {

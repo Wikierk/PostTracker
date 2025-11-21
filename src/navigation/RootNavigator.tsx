@@ -7,6 +7,8 @@ import AdminNavigator from "./AdminNavigator";
 import EmployeeNavigator from "./EmployeeNavigator";
 
 import LoginScreen from "../screens/auth/LoginScreen";
+import PackageFormScreen from "../screens/admin/PackageFormScreen";
+import PackageDetailsScreen from "../screens/admin/PackageDetailsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -18,7 +20,29 @@ const RootNavigator = () => {
       {!user.loggedIn ? (
         <Stack.Screen name="Login" component={LoginScreen} />
       ) : user.role === "admin" ? (
-        <Stack.Screen name="AdminApp" component={AdminNavigator} />
+        <Stack.Group>
+          <Stack.Screen name="AdminApp" component={AdminNavigator} />
+
+          <Stack.Screen
+            name="PackageForm"
+            component={PackageFormScreen}
+            options={{
+              headerShown: true,
+              title: "Rejestracja Przesyłki",
+              presentation: "modal",
+              headerBackTitle: "Anuluj",
+            }}
+          />
+          <Stack.Screen
+            name="PackageDetails"
+            component={PackageDetailsScreen}
+            options={{
+              headerShown: true,
+              title: "Szczegóły Przesyłki",
+              headerBackTitle: "Wróć",
+            }}
+          />
+        </Stack.Group>
       ) : (
         <Stack.Screen name="EmployeeApp" component={EmployeeNavigator} />
       )}
