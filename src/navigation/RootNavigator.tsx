@@ -10,6 +10,7 @@ import LoginScreen from "../screens/auth/LoginScreen";
 import PackageFormScreen from "../screens/admin/PackageFormScreen";
 import AdminPackageDetailsScreen from "../screens/admin/PackageDetailsScreen";
 import EmployeePackageDetailsScreen from "../screens/employee/PackageDetailsScreen";
+import EmployeePackageOrderScreen from "../screens/employee/PackageOrderScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -49,6 +50,15 @@ const RootNavigator = () => {
           <Stack.Screen
             name="PackageDetails"
             component={EmployeePackageDetailsScreen}
+            options={{
+              headerShown: true,
+              title: "Szczegóły Przesyłki",
+              headerBackTitle: "Wróć",
+            }}
+          />
+          <Stack.Screen
+            name="PackageOrder"
+            component={EmployeePackageOrderScreen}
             options={{
               headerShown: true,
               title: "Szczegóły Przesyłki",
