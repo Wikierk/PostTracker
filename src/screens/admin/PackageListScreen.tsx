@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { Package } from "../../types";
+import PackageListItem from "../../components/PackageListItem";
 
 const MOCK_PACKAGES: Package[] = [
   {
@@ -58,31 +59,8 @@ const PackageListScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [searchQuery, setSearchQuery] = useState("");
-
   const renderItem = ({ item }: { item: Package }) => (
-    <List.Item
-      title={item.sender}
-      description={`Do: ${item.recipient} | ${item.trackingNumber}`}
-      left={(props) => <List.Icon {...props} icon="package-variant" />}
-      right={(props) => (
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text
-            style={{
-              color: item.status === "delivered" ? "green" : "orange",
-              marginRight: 10,
-              fontSize: 12,
-            }}
-          >
-            {item.status === "delivered" ? "ODEBRANA" : "W RECEPCJI"}
-          </Text>
-          <List.Icon {...props} icon="chevron-right" />
-        </View>
-      )}
-      onPress={() =>
-        navigation.navigate("PackageDetails", { packageData: item })
-      }
-      style={{ backgroundColor: theme.colors.surface }}
-    />
+    <PackageListItem {...item}/>
   );
 
   return (
