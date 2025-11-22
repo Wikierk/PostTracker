@@ -10,7 +10,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { PackageStatus } from "../../types";
 import PackageStatusCard from "../../components/PackageStatusCard";
-import PackageDetailsCard from "../../components/PackageDetailsCard";
+import PackageDetailsCardProps from "../../components/PackageDetailsCard";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
 
@@ -77,7 +77,7 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
           Wydaj Przesyłkę
         </Button>
       )}
-      <PackageDetailsCard package={packageData}/>
+      <PackageDetailsCardProps package={packageData}/>
       <Text variant="titleMedium" style={styles.sectionHeader}>
         Zarządzanie
       </Text>

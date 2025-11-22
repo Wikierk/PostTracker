@@ -8,11 +8,11 @@ import {
 } from "react-native-paper";
 import { Package } from "../types";
 
-type PackageDetailsCard = {
+type PackageDetailsCardProps = {
   package: Package;
 }
 
-const PackageDetailsCard = (props: PackageDetailsCard) => {
+const PackageDetailsCardProps = (props: PackageDetailsCardProps) => {
   return (
     <Card style={styles.card}>
       <Card.Title title="Informacje o przesyłce" />
@@ -76,4 +76,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PackageDetailsCard;
+export default PackageDetailsCardProps;
