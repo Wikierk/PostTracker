@@ -1,18 +1,17 @@
 import React, { useState } from "react";
 import { View, ScrollView, StyleSheet, Alert } from "react-native";
-import {
-  Text,
-  Button,
-  Card,
-  useTheme,
-} from "react-native-paper";
+import { Text, Button, Card, useTheme } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { PackageStatus } from "../../types";
 import PackageStatusCard from "../../components/PackageStatusCard";
 import PackageDetailsCardProps from "../../components/PackageDetailsCard";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-type PackageDetailsScrenProps = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
+type PackageDetailsScrenProps = NativeStackScreenProps<
+  RootStackParamList,
+  "PackageDetails"
+>;
 
 const PackageDetailsScreen = (props: PackageDetailsScrenProps) => {
   const theme = useTheme();
@@ -20,31 +19,34 @@ const PackageDetailsScreen = (props: PackageDetailsScrenProps) => {
   const [status, setStatus] = useState<PackageStatus>(packageData.status);
 
   const handleOrder = () => {
-    props.navigation.navigate("PackageOrder", { packageData: packageData })
+    props.navigation.navigate("PackageOrder", { packageData: packageData });
   };
 
   return (
-    <ScrollView
+    <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={["bottom", "left", "right"]}
     >
-      <Card style={styles.card}>
-        <PackageStatusCard status={status}/>
-      </Card>
+      <ScrollView
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
+        <PackageStatusCard status={status} />
 
-      {status !== "delivered" && (
-        <Button
-          mode="contained"
-          icon="hand-coin"
-          onPress={handleOrder}
-          style={styles.mainButton}
-          contentStyle={{ height: 50 }}
-        >
-          Odbierz przesyłkę
-        </Button>
-      )}
-      <PackageDetailsCardProps package={packageData}/>
-    </ScrollView>
-  )
+        {status !== "delivered" && (
+          <Button
+            mode="contained"
+            icon="hand-coin"
+            onPress={handleOrder}
+            style={styles.mainButton}
+            contentStyle={{ height: 50 }}
+          >
+            Odbierz przesyłkę
+          </Button>
+        )}
+        <PackageDetailsCardProps package={packageData} />
+      </ScrollView>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({

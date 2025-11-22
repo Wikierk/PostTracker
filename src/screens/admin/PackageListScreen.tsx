@@ -14,6 +14,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { Package } from "../../types";
 import PackageListItem from "../../components/PackageListItem";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MOCK_PACKAGES: Package[] = [
   {
@@ -60,12 +61,13 @@ const PackageListScreen = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [searchQuery, setSearchQuery] = useState("");
   const renderItem = ({ item }: { item: Package }) => (
-    <PackageListItem {...item}/>
+    <PackageListItem {...item} />
   );
 
   return (
-    <View
+    <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={["top", "left", "right"]}
     >
       <View style={styles.header}>
         <Searchbar
@@ -97,7 +99,7 @@ const PackageListScreen = () => {
         color="white"
         onPress={() => navigation.navigate("PackageForm")}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -9,6 +9,7 @@ import {
 } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageForm">;
 
@@ -39,80 +40,83 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
   };
 
   return (
-    <ScrollView
+    <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={["bottom", "left", "right"]}
     >
-      <View style={styles.form}>
-        <Text variant="headlineSmall" style={styles.header}>
-          Nowa Przesyłka
-        </Text>
+      <ScrollView>
+        <View style={styles.form}>
+          <Text variant="headlineSmall" style={styles.header}>
+            Nowa Przesyłka
+          </Text>
 
-        <TextInput
-          label="Numer przesyłki / Kod"
-          value={trackingNumber}
-          onChangeText={setTrackingNumber}
-          mode="outlined"
-          style={styles.input}
-          right={
-            <TextInput.Icon
-              icon="barcode-scan"
-              onPress={() =>
-                navigation.navigate("AdminApp", { screen: "Scan" })
-              }
-            />
-          }
-        />
+          <TextInput
+            label="Numer przesyłki / Kod"
+            value={trackingNumber}
+            onChangeText={setTrackingNumber}
+            mode="outlined"
+            style={styles.input}
+            right={
+              <TextInput.Icon
+                icon="barcode-scan"
+                onPress={() =>
+                  navigation.navigate("AdminApp", { screen: "Scan" })
+                }
+              />
+            }
+          />
 
-        {scannedCode ? (
-          <HelperText type="info" visible={true}>
-            Kod został wczytany automatycznie ze skanera.
-          </HelperText>
-        ) : null}
+          {scannedCode ? (
+            <HelperText type="info" visible={true}>
+              Kod został wczytany automatycznie ze skanera.
+            </HelperText>
+          ) : null}
 
-        <TextInput
-          label="Nadawca (np. DHL, Amazon)"
-          value={sender}
-          onChangeText={setSender}
-          mode="outlined"
-          style={styles.input}
-        />
+          <TextInput
+            label="Nadawca (np. DHL, Amazon)"
+            value={sender}
+            onChangeText={setSender}
+            mode="outlined"
+            style={styles.input}
+          />
 
-        <TextInput
-          label="Adresat (Pracownik)"
-          value={recipient}
-          onChangeText={setRecipient}
-          mode="outlined"
-          style={styles.input}
-          right={<TextInput.Icon icon="account-search" />}
-        />
+          <TextInput
+            label="Adresat (Pracownik)"
+            value={recipient}
+            onChangeText={setRecipient}
+            mode="outlined"
+            style={styles.input}
+            right={<TextInput.Icon icon="account-search" />}
+          />
 
-        <TextInput
-          label="Punkt odbioru"
-          value={pickupPoint}
-          onChangeText={setPickupPoint}
-          mode="outlined"
-          style={styles.input}
-        />
+          <TextInput
+            label="Punkt odbioru"
+            value={pickupPoint}
+            onChangeText={setPickupPoint}
+            mode="outlined"
+            style={styles.input}
+          />
 
-        <Button
-          icon="camera"
-          mode="outlined"
-          onPress={() => console.log("Otwórz aparat do zdjęcia paczki")}
-          style={styles.photoButton}
-        >
-          Dodaj zdjęcie paczki (Opcjonalne)
-        </Button>
+          <Button
+            icon="camera"
+            mode="outlined"
+            onPress={() => console.log("Otwórz aparat do zdjęcia paczki")}
+            style={styles.photoButton}
+          >
+            Dodaj zdjęcie paczki (Opcjonalne)
+          </Button>
 
-        <Button
-          mode="contained"
-          onPress={handleSave}
-          style={styles.saveButton}
-          contentStyle={{ height: 50 }}
-        >
-          Zarejestruj Przesyłkę
-        </Button>
-      </View>
-    </ScrollView>
+          <Button
+            mode="contained"
+            onPress={handleSave}
+            style={styles.saveButton}
+            contentStyle={{ height: 50 }}
+          >
+            Zarejestruj Przesyłkę
+          </Button>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

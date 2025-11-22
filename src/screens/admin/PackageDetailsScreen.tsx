@@ -1,16 +1,12 @@
 import React, { useState } from "react";
 import { View, ScrollView, StyleSheet, Alert } from "react-native";
-import {
-  Text,
-  Button,
-  Card,
-  useTheme,
-} from "react-native-paper";
+import { Text, Button, Card, useTheme } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { PackageStatus } from "../../types";
 import PackageStatusCard from "../../components/PackageStatusCard";
 import PackageDetailsCardProps from "../../components/PackageDetailsCard";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
 
@@ -59,48 +55,51 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
   };
 
   return (
-    <ScrollView
+    <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={["bottom", "left", "right"]}
     >
-      <Card style={styles.card}>
-        <PackageStatusCard status={status}/>
-      </Card>
+      <ScrollView
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
+        <PackageStatusCard status={status} />
 
-      {status !== "delivered" && (
-        <Button
-          mode="contained"
-          icon="hand-coin"
-          onPress={handleDeliver}
-          style={styles.mainButton}
-          contentStyle={{ height: 50 }}
-        >
-          Wydaj Przesyłkę
-        </Button>
-      )}
-      <PackageDetailsCardProps package={packageData}/>
-      <Text variant="titleMedium" style={styles.sectionHeader}>
-        Zarządzanie
-      </Text>
-      <View style={styles.adminActions}>
-        <Button
-          mode="outlined"
-          icon="pencil"
-          onPress={() => console.log("Nawigacja do edycji")}
-          style={styles.actionButton}
-        >
-          Edytuj dane
-        </Button>
-        <Button
-          mode="outlined"
-          icon="delete"
-          textColor={theme.colors.error}
-          style={[styles.actionButton, { borderColor: theme.colors.error }]}
-          onPress={handleDelete}
-        >
-          Usuń przesyłkę
-        </Button>
-      </View>
-    </ScrollView>
+        {status !== "delivered" && (
+          <Button
+            mode="contained"
+            icon="hand-coin"
+            onPress={handleDeliver}
+            style={styles.mainButton}
+            contentStyle={{ height: 50 }}
+          >
+            Wydaj Przesyłkę
+          </Button>
+        )}
+        <PackageDetailsCardProps package={packageData} />
+        <Text variant="titleMedium" style={styles.sectionHeader}>
+          Zarządzanie
+        </Text>
+        <View style={styles.adminActions}>
+          <Button
+            mode="outlined"
+            icon="pencil"
+            onPress={() => console.log("Nawigacja do edycji")}
+            style={styles.actionButton}
+          >
+            Edytuj dane
+          </Button>
+          <Button
+            mode="outlined"
+            icon="delete"
+            textColor={theme.colors.error}
+            style={[styles.actionButton, { borderColor: theme.colors.error }]}
+            onPress={handleDelete}
+          >
+            Usuń przesyłkę
+          </Button>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
