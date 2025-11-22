@@ -7,6 +7,7 @@ export type RootStackParamList = {
   EmployeeApp: undefined;
   PackageForm: { scannedCode?: string } | undefined;
   PackageDetails: { packageData: Package };
+  PackageOrder: { packageData: Package } ;
 };
 
 export type AdminTabParamList = {

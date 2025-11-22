@@ -8,7 +8,9 @@ import EmployeeNavigator from "./EmployeeNavigator";
 
 import LoginScreen from "../screens/auth/LoginScreen";
 import PackageFormScreen from "../screens/admin/PackageFormScreen";
-import PackageDetailsScreen from "../screens/admin/PackageDetailsScreen";
+import AdminPackageDetailsScreen from "../screens/admin/PackageDetailsScreen";
+import EmployeePackageDetailsScreen from "../screens/employee/PackageDetailsScreen";
+import EmployeePackageOrderScreen from "../screens/employee/PackageOrderScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -22,7 +24,6 @@ const RootNavigator = () => {
       ) : user.role === "admin" ? (
         <Stack.Group>
           <Stack.Screen name="AdminApp" component={AdminNavigator} />
-
           <Stack.Screen
             name="PackageForm"
             component={PackageFormScreen}
@@ -35,7 +36,7 @@ const RootNavigator = () => {
           />
           <Stack.Screen
             name="PackageDetails"
-            component={PackageDetailsScreen}
+            component={AdminPackageDetailsScreen}
             options={{
               headerShown: true,
               title: "Szczegóły Przesyłki",
@@ -44,7 +45,27 @@ const RootNavigator = () => {
           />
         </Stack.Group>
       ) : (
-        <Stack.Screen name="EmployeeApp" component={EmployeeNavigator} />
+        <Stack.Group>
+          <Stack.Screen name="EmployeeApp" component={EmployeeNavigator}/>
+          <Stack.Screen
+            name="PackageDetails"
+            component={EmployeePackageDetailsScreen}
+            options={{
+              headerShown: true,
+              title: "Szczegóły Przesyłki",
+              headerBackTitle: "Wróć",
+            }}
+          />
+          <Stack.Screen
+            name="PackageOrder"
+            component={EmployeePackageOrderScreen}
+            options={{
+              headerShown: true,
+              title: "Szczegóły Przesyłki",
+              headerBackTitle: "Wróć",
+            }}
+          />
+        </Stack.Group>
       )}
     </Stack.Navigator>
   );

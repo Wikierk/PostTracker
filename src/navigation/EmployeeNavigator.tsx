@@ -2,8 +2,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { EmployeeTabParamList } from "../types/navigation";
 import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
-
-import EmployeeDashboardScreen from "../screens/employee/EmployeeDashboardScreen";
+import PackageListScreen from "../screens/employee/PackageListScreen";
 import SettingsScreen from "../screens/shared/SettingsScreen";
 
 const EmployeeTab = createBottomTabNavigator<EmployeeTabParamList>();
@@ -13,7 +12,7 @@ const EmployeeNavigator = () => {
     <EmployeeTab.Navigator screenOptions={{ headerShown: false }}>
       <EmployeeTab.Screen
         name="MyPackages"
-        component={EmployeeDashboardScreen}
+        component={PackageListScreen}
         options={{
           tabBarLabel: "Moje paczki",
           tabBarIcon: ({ color, size }) => (

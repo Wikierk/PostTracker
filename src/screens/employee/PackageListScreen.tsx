@@ -1,18 +1,10 @@
 import React, { useState } from "react";
-import { View, FlatList, StyleSheet } from "react-native";
-import {
-  List,
-  FAB,
-  Searchbar,
-  Chip,
-  useTheme,
-  Text,
-  Divider,
-} from "react-native-paper";
+import { FlatList, View, StyleSheet } from "react-native";
+import { Chip, Divider, FAB, List, Searchbar, Text, useTheme } from "react-native-paper";
+import { Package } from "../../types";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
-import { Package } from "../../types";
 import PackageListItem from "../../components/PackageListItem";
 
 const MOCK_PACKAGES: Package[] = [
@@ -29,36 +21,18 @@ const MOCK_PACKAGES: Package[] = [
     id: "2",
     trackingNumber: "UPS-99999",
     sender: "Zalando",
-    recipient: "Anna Nowak",
+    recipient: "Jan Kowalski",
     status: "delivered",
     pickupPoint: "Recepcja B",
     createdAt: "2023-11-19",
-  },
-  {
-    id: "3",
-    trackingNumber: "INPOST-555",
-    sender: "Allegro",
-    recipient: "Piotr Wiśniewski",
-    status: "registered",
-    pickupPoint: "Recepcja A",
-    createdAt: "2023-11-21",
-  },
-  {
-    id: "4",
-    trackingNumber: "FEDEX-001",
-    sender: "Apple",
-    recipient: "Marek Zegarek",
-    status: "registered",
-    pickupPoint: "Recepcja A",
-    createdAt: "2023-11-21",
-  },
+  }
 ];
 
 const PackageListScreen = () => {
   const theme = useTheme();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [searchQuery, setSearchQuery] = useState("");
+
   const renderItem = ({ item }: { item: Package }) => (
     <PackageListItem {...item}/>
   );
@@ -81,21 +55,12 @@ const PackageListScreen = () => {
           <Chip mode="outlined">Do odbioru</Chip>
         </View>
       </View>
-
       <FlatList
         data={MOCK_PACKAGES}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ItemSeparatorComponent={() => <Divider />}
         contentContainerStyle={{ paddingBottom: 80 }}
-      />
-
-      <FAB
-        icon="plus"
-        label="Dodaj"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        color="white"
-        onPress={() => navigation.navigate("PackageForm")}
       />
     </View>
   );
