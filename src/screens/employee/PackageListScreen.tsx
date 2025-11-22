@@ -1,11 +1,20 @@
 import React, { useState } from "react";
 import { FlatList, View, StyleSheet } from "react-native";
-import { Chip, Divider, FAB, List, Searchbar, Text, useTheme } from "react-native-paper";
+import {
+  Chip,
+  Divider,
+  FAB,
+  List,
+  Searchbar,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { Package } from "../../types";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import PackageListItem from "../../components/PackageListItem";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MOCK_PACKAGES: Package[] = [
   {
@@ -25,21 +34,23 @@ const MOCK_PACKAGES: Package[] = [
     status: "delivered",
     pickupPoint: "Recepcja B",
     createdAt: "2023-11-19",
-  }
+  },
 ];
 
 const PackageListScreen = () => {
   const theme = useTheme();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [searchQuery, setSearchQuery] = useState("");
 
   const renderItem = ({ item }: { item: Package }) => (
-    <PackageListItem {...item}/>
+    <PackageListItem {...item} />
   );
 
   return (
-    <View
+    <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={["top", "left", "right"]}
     >
       <View style={styles.header}>
         <Searchbar
@@ -62,7 +73,7 @@ const PackageListScreen = () => {
         ItemSeparatorComponent={() => <Divider />}
         contentContainerStyle={{ paddingBottom: 80 }}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -4,6 +4,7 @@ import { Card, Text, Button, useTheme } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const AdminDashboardScreen = () => {
   const theme = useTheme();
@@ -11,8 +12,9 @@ const AdminDashboardScreen = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   return (
-    <View
+    <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={["top", "left", "right"]}
     >
       <Text variant="headlineMedium" style={styles.title}>
         Witaj, Adminie!
@@ -66,7 +68,7 @@ const AdminDashboardScreen = () => {
       >
         Dodaj ręcznie
       </Button>
-    </View>
+    </SafeAreaView>
   );
 };
 
