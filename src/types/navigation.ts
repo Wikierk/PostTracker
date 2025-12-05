@@ -1,16 +1,14 @@
 import { NavigatorScreenParams } from "@react-navigation/native";
-import { Package } from ".";
-
-export type RootStackParamList = {
-  Login: undefined;
-  AdminApp: NavigatorScreenParams<AdminTabParamList> | undefined;
-  EmployeeApp: undefined;
-  PackageForm: { scannedCode?: string } | undefined;
-  PackageDetails: { packageData: Package };
-  PackageOrder: { packageData: Package } ;
-};
+import { Package } from "./index";
 
 export type AdminTabParamList = {
+  Dashboard: undefined;
+  PackagesList: undefined;
+  UsersList: undefined;
+  Settings: undefined;
+};
+
+export type ReceptionistTabParamList = {
   Dashboard: undefined;
   Scan: undefined;
   List: undefined;
@@ -20,4 +18,20 @@ export type AdminTabParamList = {
 export type EmployeeTabParamList = {
   MyPackages: undefined;
   Settings: undefined;
+};
+
+export type RootStackParamList = {
+  Login: undefined;
+
+  AdminApp: NavigatorScreenParams<AdminTabParamList> | undefined;
+  ReceptionistApp: NavigatorScreenParams<ReceptionistTabParamList> | undefined;
+  EmployeeApp: NavigatorScreenParams<EmployeeTabParamList> | undefined;
+
+  PackageForm: { scannedCode?: string } | undefined;
+
+  PackageDetails: { packageData: Package };
+
+  PackageOrder: { packageData: Package };
+
+  Register: undefined;
 };

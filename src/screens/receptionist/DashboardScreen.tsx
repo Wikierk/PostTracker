@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const AdminDashboardScreen = () => {
+const DashboardScreen = () => {
   const theme = useTheme();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -17,7 +17,7 @@ const AdminDashboardScreen = () => {
       edges={["top", "left", "right"]}
     >
       <Text variant="headlineMedium" style={styles.title}>
-        Witaj, Adminie!
+        Panel Recepcji
       </Text>
 
       <View style={styles.statsContainer}>
@@ -29,7 +29,7 @@ const AdminDashboardScreen = () => {
             >
               5
             </Text>
-            <Text variant="bodyMedium">Do odbioru</Text>
+            <Text variant="bodyMedium">Do wydania</Text>
           </Card.Content>
         </Card>
         <Card style={styles.card}>
@@ -46,7 +46,7 @@ const AdminDashboardScreen = () => {
       </View>
 
       <Text variant="titleMedium" style={styles.subtitle}>
-        Szybkie akcje
+        Operacje
       </Text>
 
       <Button
@@ -54,7 +54,10 @@ const AdminDashboardScreen = () => {
         icon="barcode-scan"
         style={styles.button}
         contentStyle={{ height: 60 }}
-        onPress={() => navigation.navigate("AdminApp", { screen: "Scan" })}
+        // Nawigujemy do ReceptionistApp -> Scan
+        onPress={() =>
+          navigation.navigate("ReceptionistApp", { screen: "Scan" })
+        }
       >
         Skanuj nową przesyłkę
       </Button>
@@ -66,7 +69,7 @@ const AdminDashboardScreen = () => {
         contentStyle={{ height: 50 }}
         onPress={() => navigation.navigate("PackageForm")}
       >
-        Dodaj ręcznie
+        Rejestracja ręczna
       </Button>
     </SafeAreaView>
   );
@@ -81,4 +84,4 @@ const styles = StyleSheet.create({
   button: { marginTop: 10, justifyContent: "center" },
 });
 
-export default AdminDashboardScreen;
+export default DashboardScreen;

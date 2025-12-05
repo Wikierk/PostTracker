@@ -3,10 +3,12 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AdminTabParamList } from "../types/navigation";
 import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
 
-import AdminDashboardScreen from "../screens/admin/AdminDashboardScreen";
-import ScanScreen from "../screens/admin/ScanScreen";
+import AdminDashboardScreen from "../screens/admin/DashboardScreen";
 import PackageListScreen from "../screens/admin/PackageListScreen";
 import SettingsScreen from "../screens/shared/SettingsScreen";
+
+// TODO: W przyszłości dodać UsersListScreen, na razie placeholder
+const UsersPlaceholder = () => <SettingsScreen />;
 
 const AdminTab = createBottomTabNavigator<AdminTabParamList>();
 
@@ -17,32 +19,33 @@ const AdminNavigator = () => {
         name="Dashboard"
         component={AdminDashboardScreen}
         options={{
-          tabBarLabel: "Panel",
+          tabBarLabel: "Panel Admina",
           tabBarIcon: ({ color, size }) => (
-            <Icon name="view-dashboard" color={color} size={size} />
+            <Icon name="security" color={color} size={size} />
           ),
         }}
       />
       <AdminTab.Screen
-        name="Scan"
-        component={ScanScreen}
-        options={{
-          tabBarLabel: "Skanuj",
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="qrcode-scan" color={color} size={size} />
-          ),
-        }}
-      />
-      <AdminTab.Screen
-        name="List"
+        name="PackagesList"
         component={PackageListScreen}
         options={{
-          tabBarLabel: "Lista",
+          tabBarLabel: "Paczki",
           tabBarIcon: ({ color, size }) => (
-            <Icon name="format-list-bulleted" color={color} size={size} />
+            <Icon name="package-variant" color={color} size={size} />
           ),
         }}
       />
+      {/* <AdminTab.Screen
+        name="UsersList"
+        component={UsersPlaceholder}
+        options={{
+          tabBarLabel: "Użytkownicy",
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="account-group" color={color} size={size} />
+          ),
+        }}
+      /> 
+      */}
       <AdminTab.Screen
         name="Settings"
         component={SettingsScreen}
