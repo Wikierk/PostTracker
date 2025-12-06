@@ -1,18 +1,14 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import {
-  Text,
-  Card,
-  Divider,
-  IconButton,
-} from "react-native-paper";
+import { Text, Card, Divider, IconButton } from "react-native-paper";
 import { Package } from "../types";
 
 type PackageDetailsCardProps = {
   package: Package;
-}
+};
 
-const PackageDetailsCardProps = (props: PackageDetailsCardProps) => {
+const PackageDetailsCard = (props: PackageDetailsCardProps) => {
+  const recipientName = props.package.recipient?.fullName || "Brak danych";
   return (
     <Card style={styles.card}>
       <Card.Title title="Informacje o przesyłce" />
@@ -22,14 +18,8 @@ const PackageDetailsCardProps = (props: PackageDetailsCardProps) => {
           label="Numer przesyłki"
           value={props.package.trackingNumber}
         />
-        <DetailRow 
-          label="Nadawca" 
-          value={props.package.sender} />
-        <DetailRow
-          label="Odbiorca"
-          value={props.package.recipient}
-          icon="account"
-          />
+        <DetailRow label="Nadawca" value={props.package.sender} />
+        <DetailRow label="Odbiorca" value={recipientName} icon="account" />
         <DetailRow
           label="Punkt odbioru"
           value={props.package.pickupPoint}
@@ -42,7 +32,7 @@ const PackageDetailsCardProps = (props: PackageDetailsCardProps) => {
         />
       </Card.Content>
     </Card>
-  )
+  );
 };
 
 const DetailRow = ({
@@ -76,4 +66,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PackageDetailsCardProps;
+export default PackageDetailsCard;

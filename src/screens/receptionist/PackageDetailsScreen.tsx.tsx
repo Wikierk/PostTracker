@@ -1,25 +1,37 @@
 import React, { useState } from "react";
 import { View, ScrollView, StyleSheet, Alert } from "react-native";
-import { Text, Button, Card, useTheme } from "react-native-paper";
+import { Button, useTheme } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { PackageStatus } from "../../types";
 import PackageStatusCard from "../../components/PackageStatusCard";
-import { SafeAreaView } from "react-native-safe-area-context";
 import PackageDetailsCard from "../../components/PackageDetailsCard";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-type PackageDetailsScreenProps = NativeStackScreenProps<
-  RootStackParamList,
-  "PackageDetails"
->;
+type Props = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
 
-const PackageDetailsScreen = (props: PackageDetailsScreenProps) => {
+const PackageDetailsScreen = ({ route, navigation }: Props) => {
   const theme = useTheme();
-  const { packageData } = props.route.params;
+  const { packageData } = route.params;
   const [status, setStatus] = useState<PackageStatus>(packageData.status);
 
-  const handleOrder = () => {
-    props.navigation.navigate("PackageOrder", { packageData: packageData });
+  const handleDeliver = () => {
+    Alert.alert(
+      "Wydanie przesyłki",
+      `Czy potwierdzasz wydanie przesyłki do: ${
+        packageData.recipient?.fullName || "Nieznany"
+      }?`,
+      [
+        { text: "Anuluj", style: "cancel" },
+        {
+          text: "Potwierdź wydanie",
+          onPress: () => {
+            setStatus("delivered");
+            console.log("Recepcjonista wydał paczkę ID:", packageData.id);
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -27,22 +39,22 @@ const PackageDetailsScreen = (props: PackageDetailsScreenProps) => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       edges={["bottom", "left", "right"]}
     >
-      <ScrollView
-        style={[styles.container, { backgroundColor: theme.colors.background }]}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <PackageStatusCard status={status} />
 
+        {/* Przycisk akcji widoczny tylko gdy paczka nie jest wydana */}
         {status !== "delivered" && (
           <Button
             mode="contained"
             icon="hand-coin"
-            onPress={handleOrder}
+            onPress={handleDeliver}
             style={styles.mainButton}
             contentStyle={{ height: 50 }}
           >
-            Odbierz przesyłkę
+            Wydaj Przesyłkę
           </Button>
         )}
+
         <PackageDetailsCard package={packageData} />
       </ScrollView>
     </SafeAreaView>
@@ -50,16 +62,9 @@ const PackageDetailsScreen = (props: PackageDetailsScreenProps) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  card: { marginBottom: 16 },
+  container: { flex: 1 },
+  scrollContent: { padding: 16 },
   mainButton: { marginBottom: 20 },
-  sectionHeader: { marginBottom: 10, marginLeft: 5, opacity: 0.7 },
-  adminActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 40,
-  },
-  actionButton: { width: "48%" },
 });
 
 export default PackageDetailsScreen;

@@ -1,79 +1,123 @@
 import React, { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
-import { Button, Text, List, useTheme, Avatar, Divider, Switch } from "react-native-paper";
+import {
+  Button,
+  Text,
+  List,
+  useTheme,
+  Avatar,
+  Divider,
+  Switch,
+} from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../hooks/useAuth";
 
 const SettingsScreen = () => {
-  const [userState, setUser] = useAuth();
+  const { user, logout } = useAuth();
+
   const theme = useTheme();
-  const [isDarkTheme, setIsDarkTheme] = useState(false); 
-  const displayName = userState.role === 'admin' ? "Administrator" : 
-                      userState.role === 'employee' ? "Pracownik" : "Użytkownik";
-  const email = "userl@example.com"; 
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+
+  const getRoleName = () => {
+    switch (user.role) {
+      case "admin":
+        return "Administrator";
+      case "receptionist":
+        return "Recepcja";
+      case "employee":
+        return "Pracownik";
+      default:
+        return "Użytkownik";
+    }
+  };
+
+  const email = user.email || "brak-emaila@system.pl";
+  const displayName = getRoleName();
 
   const handleLogout = () => {
-    setUser({ loggedIn: false, role: null });
+    logout();
   };
-  
+
   const handleThemeToggle = () => {
-    setIsDarkTheme(prev => !prev);
+    setIsDarkTheme((prev) => !prev);
   };
 
   return (
-    <SafeAreaView 
-        style={[styles.safeArea, { backgroundColor: theme.colors.background }]}
-        edges={["top", "left", "right"]}
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.colors.background }]}
+      edges={["top", "left", "right"]}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text variant="headlineMedium" style={styles.header}>
           Ustawienia
         </Text>
+
         <Divider style={styles.divider} />
+
         <List.Item
-            title={displayName}
-            description={email}
-            left={() => (
-                <Avatar.Icon 
-                    size={40} 
-                    icon={userState.role === 'admin' ? "security" : "account"} 
-                    style={{ backgroundColor: theme.colors.primary }}
-                />
-            )}
-            right={() => <List.Icon icon="chevron-right" />}
-            style={[styles.profileItem, { backgroundColor: theme.colors.surface }]}
+          title={displayName}
+          description={email}
+          left={() => (
+            <Avatar.Icon
+              size={40}
+              icon={user.role === "admin" ? "security" : "account"}
+              style={{ backgroundColor: theme.colors.primary }}
+            />
+          )}
+          style={[
+            styles.profileItem,
+            { backgroundColor: theme.colors.surface },
+          ]}
         />
-        <List.Section title="WYGLĄD I FUNKCJE" style={styles.listSection}>
+
+        <List.Section
+          title="WYGLĄD I FUNKCJE"
+          style={[
+            styles.listSection,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
           <List.Item
             title="Ciemny motyw"
             description={isDarkTheme ? "Motyw: Ciemny" : "Motyw: Jasny"}
-            left={() => <List.Icon icon={isDarkTheme ? "moon-waning-crescent" : "white-balance-sunny"} />}
-            right={() => <Switch value={isDarkTheme} onValueChange={handleThemeToggle} />}
+            left={() => (
+              <List.Icon
+                icon={
+                  isDarkTheme ? "moon-waning-crescent" : "white-balance-sunny"
+                }
+              />
+            )}
+            right={() => (
+              <Switch value={isDarkTheme} onValueChange={handleThemeToggle} />
+            )}
             style={styles.listItem}
             onPress={handleThemeToggle}
           />
           <List.Item
             title="Powiadomienia"
-            description="Zarządzaj alertami i powiadomieniami"
+            description="Zarządzaj alertami"
             left={() => <List.Icon icon="bell-outline" />}
             right={() => <List.Icon icon="chevron-right" />}
             style={styles.listItem}
-            onPress={() => console.log('Przejście do Powiadomień')}
+            onPress={() => console.log("Przejście do Powiadomień")}
           />
           <List.Item
             title="Wersja aplikacji"
-            description="v1.0.0 (Build 20251122)"
+            description="v1.0.0 (Beta)"
             left={() => <List.Icon icon="information-outline" />}
             style={styles.listItem}
           />
         </List.Section>
+
         <Divider style={styles.divider} />
+
         <Button
           mode="outlined"
           icon="logout"
           onPress={handleLogout}
           style={styles.logoutButton}
           textColor={theme.colors.error}
+          contentStyle={{ height: 48 }}
         >
           Wyloguj się
         </Button>
@@ -83,14 +127,14 @@ const SettingsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { 
+  safeArea: {
     flex: 1,
   },
   scrollContainer: {
     padding: 16,
   },
   header: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
     marginLeft: 5,
   },
@@ -98,25 +142,26 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   profileItem: {
-    paddingHorizontal: 16, 
-    borderRadius: 8,
-    marginBottom: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    paddingVertical: 8,
   },
   listSection: {
-    backgroundColor: 'white', 
-    borderRadius: 8,
-    overflow: 'hidden', 
+    borderRadius: 12,
+    overflow: "hidden",
     marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.05)",
   },
   listItem: {
-      paddingHorizontal: 16,
+    paddingHorizontal: 16,
   },
   logoutButton: {
-    marginTop: 20,
-    borderColor: 'red',
+    marginTop: 10,
+    borderColor: "red",
     borderWidth: 1,
-    paddingVertical: 8,
-  }
+  },
 });
 
 export default SettingsScreen;

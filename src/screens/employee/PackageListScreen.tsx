@@ -1,14 +1,6 @@
 import React, { useState } from "react";
 import { FlatList, View, StyleSheet } from "react-native";
-import {
-  Chip,
-  Divider,
-  FAB,
-  List,
-  Searchbar,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { Chip, Divider, Searchbar, useTheme, Text } from "react-native-paper";
 import { Package } from "../../types";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -21,19 +13,10 @@ const MOCK_PACKAGES: Package[] = [
     id: "1",
     trackingNumber: "DHL-12345",
     sender: "Amazon",
-    recipient: "Jan Kowalski",
+    recipient: { id: "1", fullName: "Ja (Pracownik)" },
     status: "registered",
     pickupPoint: "Recepcja A",
     createdAt: "2023-11-20",
-  },
-  {
-    id: "2",
-    trackingNumber: "UPS-99999",
-    sender: "Zalando",
-    recipient: "Jan Kowalski",
-    status: "delivered",
-    pickupPoint: "Recepcja B",
-    createdAt: "2023-11-19",
   },
 ];
 
@@ -44,7 +27,12 @@ const PackageListScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const renderItem = ({ item }: { item: Package }) => (
-    <PackageListItem {...item} />
+    <PackageListItem
+      {...item}
+      onPress={() =>
+        navigation.navigate("PackageDetails", { packageData: item })
+      }
+    />
   );
 
   return (
@@ -53,6 +41,9 @@ const PackageListScreen = () => {
       edges={["top", "left", "right"]}
     >
       <View style={styles.header}>
+        <Text variant="headlineMedium" style={styles.title}>
+          Moje Przesyłki
+        </Text>
         <Searchbar
           placeholder="Szukaj..."
           onChangeText={setSearchQuery}
@@ -61,17 +52,18 @@ const PackageListScreen = () => {
         />
         <View style={styles.filters}>
           <Chip selected mode="outlined" style={{ marginRight: 8 }}>
-            Wszystkie
+            Do odbioru
           </Chip>
-          <Chip mode="outlined">Do odbioru</Chip>
+          <Chip mode="outlined">Historia</Chip>
         </View>
       </View>
+
       <FlatList
         data={MOCK_PACKAGES}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ItemSeparatorComponent={() => <Divider />}
-        contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
       />
     </SafeAreaView>
   );
@@ -80,14 +72,9 @@ const PackageListScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { padding: 16 },
+  title: { marginBottom: 15, fontWeight: "bold" },
   searchBar: { marginBottom: 10, backgroundColor: "white" },
   filters: { flexDirection: "row" },
-  fab: {
-    position: "absolute",
-    margin: 16,
-    right: 0,
-    bottom: 0,
-  },
 });
 
 export default PackageListScreen;

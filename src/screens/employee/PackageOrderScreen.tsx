@@ -12,14 +12,13 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type PackageOrderScreenProps = NativeStackScreenProps<
-  RootStackParamList,
-  "PackageOrder"
->;
+type Props = NativeStackScreenProps<RootStackParamList, "PackageOrder">;
 
-const PackageOrderScreen = (props: PackageOrderScreenProps) => {
+const PackageOrderScreen = ({ route }: Props) => {
   const theme = useTheme();
-  const { packageData } = props.route.params || {};
+  const { packageData } = route.params || {};
+
+  // TODO: W przyszłości kod odbioru powinien przychodzić z backendu (z obiektu packageData)
   const pickupCode = "530629";
 
   const handleCopyCode = async () => {

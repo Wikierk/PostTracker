@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, ScrollView, StyleSheet, Alert } from "react-native";
-import { Text, Button, Card, useTheme } from "react-native-paper";
+import { Text, Button, useTheme, Card, Avatar } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
-import { PackageStatus } from "../../types";
 import PackageStatusCard from "../../components/PackageStatusCard";
-import PackageDetailsCardProps from "../../components/PackageDetailsCard";
+import PackageDetailsCard from "../../components/PackageDetailsCard";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
@@ -14,28 +13,6 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
   const theme = useTheme();
   const { packageData } = route.params;
 
-  const [status, setStatus] = useState<PackageStatus>(packageData.status);
-
-  const handleDeliver = () => {
-    Alert.alert(
-      "Wydanie przesyłki",
-      `Czy na pewno chcesz wydać przesyłkę do: ${packageData.recipient}?`,
-      [
-        { text: "Anuluj", style: "cancel" },
-        {
-          text: "Wydaj",
-          onPress: () => {
-            setStatus("delivered");
-            console.log(
-              "Zmieniono status na delivered dla ID:",
-              packageData.id
-            );
-          },
-        },
-      ]
-    );
-  };
-
   const handleDelete = () => {
     Alert.alert(
       "Usuń przesyłkę",
@@ -43,10 +20,10 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
       [
         { text: "Anuluj", style: "cancel" },
         {
-          text: "Usuń",
+          text: "Usuń trwale",
           style: "destructive",
           onPress: () => {
-            console.log("Usunięto ID:", packageData.id);
+            console.log("Admin usunął paczkę ID:", packageData.id);
             navigation.goBack();
           },
         },
@@ -54,36 +31,76 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
     );
   };
 
+  const handleResolveProblem = () => {
+    Alert.alert("Rozwiąż problem", "Czy oznaczyć problem jako rozwiązany?", [
+      { text: "Anuluj", style: "cancel" },
+      {
+        text: "Tak, rozwiąż",
+        onPress: () => console.log("Problem rozwiązany"),
+      },
+    ]);
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       edges={["bottom", "left", "right"]}
     >
-      <ScrollView
-        style={[styles.container, { backgroundColor: theme.colors.background }]}
-      >
-        <PackageStatusCard status={status} />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <PackageStatusCard status={packageData.status} />
 
-        {status !== "delivered" && (
-          <Button
-            mode="contained"
-            icon="hand-coin"
-            onPress={handleDeliver}
-            style={styles.mainButton}
-            contentStyle={{ height: 50 }}
+        {packageData.status === "problem" && (
+          <Card
+            style={[
+              styles.card,
+              { backgroundColor: theme.colors.errorContainer },
+            ]}
           >
-            Wydaj Przesyłkę
-          </Button>
+            <Card.Title
+              title="Zgłoszono Problem"
+              titleStyle={{
+                color: theme.colors.onErrorContainer,
+                fontWeight: "bold",
+              }}
+              left={(props) => (
+                <Avatar.Icon
+                  {...props}
+                  icon="alert"
+                  style={{ backgroundColor: theme.colors.error }}
+                />
+              )}
+            />
+            <Card.Content>
+              <Text
+                variant="bodyMedium"
+                style={{ color: theme.colors.onErrorContainer }}
+              >
+                Pracownik zgłosił problem z tą przesyłką. Wymagana interwencja
+                administratora.
+              </Text>
+              <Button
+                mode="contained"
+                buttonColor={theme.colors.error}
+                style={{ marginTop: 10 }}
+                onPress={handleResolveProblem}
+              >
+                Rozwiąż zgłoszenie
+              </Button>
+            </Card.Content>
+          </Card>
         )}
-        <PackageDetailsCardProps package={packageData} />
+
+        <PackageDetailsCard package={packageData} />
+
         <Text variant="titleMedium" style={styles.sectionHeader}>
-          Zarządzanie
+          Panel Zarządzania (Admin)
         </Text>
+
         <View style={styles.adminActions}>
           <Button
             mode="outlined"
             icon="pencil"
-            onPress={() => console.log("Nawigacja do edycji")}
+            onPress={() => console.log("Nawigacja do edycji (TODO)")}
             style={styles.actionButton}
           >
             Edytuj dane
@@ -95,7 +112,7 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
             style={[styles.actionButton, { borderColor: theme.colors.error }]}
             onPress={handleDelete}
           >
-            Usuń przesyłkę
+            Usuń rekord
           </Button>
         </View>
       </ScrollView>
@@ -104,10 +121,15 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1 },
+  scrollContent: { padding: 16 },
   card: { marginBottom: 16 },
-  mainButton: { marginBottom: 20 },
-  sectionHeader: { marginBottom: 10, marginLeft: 5, opacity: 0.7 },
+  sectionHeader: {
+    marginBottom: 10,
+    marginLeft: 5,
+    opacity: 0.7,
+    marginTop: 10,
+  },
   adminActions: {
     flexDirection: "row",
     justifyContent: "space-between",
