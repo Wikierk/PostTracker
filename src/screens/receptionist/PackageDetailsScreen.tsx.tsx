@@ -7,6 +7,7 @@ import { PackageStatus } from "../../types";
 import PackageStatusCard from "../../components/PackageStatusCard";
 import PackageDetailsCard from "../../components/PackageDetailsCard";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { packageService } from "../../services/packageService";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
 
@@ -34,6 +35,28 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
     );
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      "Usuń przesyłkę",
+      "Czy na pewno chcesz trwale usunąć tą paczkę?",
+      [
+        { text: "Anuluj", style: "cancel" },
+        {
+          text: "Usuń",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await packageService.deletePackage(packageData.id);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert("Błąd", "Nie udało się usunąć przesyłki.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -41,8 +64,6 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <PackageStatusCard status={status} />
-
-        {/* Przycisk akcji widoczny tylko gdy paczka nie jest wydana */}
         {status !== "delivered" && (
           <Button
             mode="contained"
@@ -54,8 +75,26 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
             Wydaj Przesyłkę
           </Button>
         )}
-
         <PackageDetailsCard package={packageData} />
+        <View style={styles.adminActions}>
+          <Button
+            mode="outlined"
+            icon="pencil"
+            onPress={() => console.log("Nawigacja do edycji (TODO)")}
+            style={styles.actionButton}
+          >
+            Edytuj dane
+          </Button>
+          <Button
+            mode="outlined"
+            icon="delete"
+            textColor={theme.colors.error}
+            style={[styles.actionButton, { borderColor: theme.colors.error }]}
+            onPress={handleDelete}
+          >
+            Usuń rekord
+          </Button>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -65,6 +104,12 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: 16 },
   mainButton: { marginBottom: 20 },
+  adminActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 40,
+  },
+  actionButton: { width: "48%" },
 });
 
 export default PackageDetailsScreen;

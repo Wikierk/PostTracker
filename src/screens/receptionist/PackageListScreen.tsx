@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FlatList, View, StyleSheet, Alert } from "react-native";
 import { Chip, Divider, FAB, Searchbar, useTheme } from "react-native-paper";
 import { Package } from "../../types";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import PackageListItem from "../../components/PackageListItem";
@@ -25,7 +25,7 @@ const PackageListScreen = () => {
     />
   );
 
-  useEffect(() => {
+  useFocusEffect(() => {
     packageService.getAllPackages().then((data) => {
       const formattedPackages = data.map((pkg: Package) => ({
         ...pkg,
@@ -33,7 +33,7 @@ const PackageListScreen = () => {
       }));
       setPackages(formattedPackages);
     });
-  }, []);
+  });
 
   return (
     <SafeAreaView

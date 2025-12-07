@@ -1,3 +1,4 @@
+import { Alert } from "react-native";
 import client from "../api/client";
 import { Package } from "../types";
 
@@ -16,6 +17,10 @@ export const packageService = {
   },
   getAllPackages: async (): Promise<Package[]> => {
     const response = await client.get("/packages");
+    return response.data;
+  },
+  deletePackage: async (packageId: string) => {
+    const response = await client.delete(`/packages/${packageId}`);
     return response.data;
   },
 };
