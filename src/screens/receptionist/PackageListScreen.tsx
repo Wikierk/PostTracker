@@ -1,57 +1,20 @@
-import React, { useState } from "react";
-import { FlatList, View, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { FlatList, View, StyleSheet, Alert } from "react-native";
 import { Chip, Divider, FAB, Searchbar, useTheme } from "react-native-paper";
 import { Package } from "../../types";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import PackageListItem from "../../components/PackageListItem";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const MOCK_PACKAGES: Package[] = [
-  {
-    id: "1",
-    trackingNumber: "DHL-12345",
-    sender: "Amazon",
-    recipient: { id: "1", fullName: "Jan Kowalski" },
-    status: "registered",
-    pickupPoint: "Recepcja A",
-    createdAt: "2023-11-20",
-  },
-  {
-    id: "2",
-    trackingNumber: "UPS-99999",
-    sender: "Zalando",
-    recipient: { id: "1", fullName: "Jan Kowalski" },
-    status: "delivered",
-    pickupPoint: "Recepcja B",
-    createdAt: "2023-11-19",
-  },
-  {
-    id: "3",
-    trackingNumber: "INPOST-555",
-    sender: "Allegro",
-    recipient: { id: "1", fullName: "Jan Kowalski" },
-    status: "registered",
-    pickupPoint: "Recepcja A",
-    createdAt: "2023-11-21",
-  },
-  {
-    id: "4",
-    trackingNumber: "FEDEX-001",
-    sender: "Apple",
-    recipient: { id: "1", fullName: "Jan Kowalski" },
-    status: "registered",
-    pickupPoint: "Recepcja A",
-    createdAt: "2023-11-21",
-  },
-];
+import { packageService } from "../../services/packageService";
 
 const PackageListScreen = () => {
   const theme = useTheme();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [searchQuery, setSearchQuery] = useState("");
+  const [packages, setPackages] = useState<Package[]>([]);
 
   const renderItem = ({ item }: { item: Package }) => (
     <PackageListItem
@@ -61,6 +24,16 @@ const PackageListScreen = () => {
       }
     />
   );
+
+  useFocusEffect(() => {
+    packageService.getAllPackages().then((data) => {
+      const formattedPackages = data.map((pkg: Package) => ({
+        ...pkg,
+        createdAt: pkg.createdAt.slice(0, 10),
+      }));
+      setPackages(formattedPackages);
+    });
+  });
 
   return (
     <SafeAreaView
@@ -83,7 +56,7 @@ const PackageListScreen = () => {
       </View>
 
       <FlatList
-        data={MOCK_PACKAGES}
+        data={packages}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ItemSeparatorComponent={() => <Divider />}

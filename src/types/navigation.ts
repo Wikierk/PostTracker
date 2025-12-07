@@ -27,7 +27,9 @@ export type RootStackParamList = {
   ReceptionistApp: NavigatorScreenParams<ReceptionistTabParamList> | undefined;
   EmployeeApp: NavigatorScreenParams<EmployeeTabParamList> | undefined;
 
-  PackageForm: { scannedCode?: string } | undefined;
+  PackageForm:
+    | { scannedCode?: string; packageData?: Package; isUpdate?: boolean }
+    | undefined;
 
   PackageDetails: { packageData: Package };
 
