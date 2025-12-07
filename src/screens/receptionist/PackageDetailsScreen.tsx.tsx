@@ -26,9 +26,15 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
         { text: "Anuluj", style: "cancel" },
         {
           text: "Potwierdź wydanie",
-          onPress: () => {
-            setStatus("delivered");
-            console.log("Recepcjonista wydał paczkę ID:", packageData.id);
+          onPress: async () => {
+            try {
+              await packageService.deliverPackage(packageData.id);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert("Błąd", "Nie udało się potwierdzić odbioru paczki.");
+            } finally {
+              setStatus("delivered");
+            }
           },
         },
       ]

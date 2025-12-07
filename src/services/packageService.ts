@@ -23,4 +23,8 @@ export const packageService = {
     const response = await client.delete(`/packages/${packageId}`);
     return response.data;
   },
+  deliverPackage: async (packageId: string) => {
+    const response = await client.put(`/packages/${packageId}/deliver`);
+    return response.data;
+  },
 };
