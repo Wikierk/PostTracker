@@ -16,18 +16,30 @@ import { RootStackParamList } from "../../types/navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { packageService } from "../../services/packageService";
 import { userService, User } from "../../services/userService";
+import { Package } from "../../types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageForm">;
 
 const PackageFormScreen = ({ navigation, route }: Props) => {
   const theme = useTheme();
   const scannedCode = route.params?.scannedCode || "";
-
-  const [trackingNumber, setTrackingNumber] = useState(scannedCode);
-  const [sender, setSender] = useState("");
-  const [recipientId, setRecipientId] = useState("");
-  const [recipientName, setRecipientName] = useState("");
-  const [pickupPoint, setPickupPoint] = useState("Recepcja Główna");
+  const packageData: Package | undefined = route.params?.packageData;
+  const isUpdate = route.params?.isUpdate || false;
+  const [trackingNumber, setTrackingNumber] = useState(
+    scannedCode || (isUpdate && packageData ? packageData.trackingNumber : "")
+  );
+  const [sender, setSender] = useState(
+    isUpdate && packageData ? packageData.sender : ""
+  );
+  const [recipientId, setRecipientId] = useState(
+    isUpdate && packageData?.recipient ? packageData.recipient.id : ""
+  );
+  const [recipientName, setRecipientName] = useState(
+    isUpdate && packageData?.recipient ? packageData.recipient.fullName : ""
+  );
+  const [pickupPoint, setPickupPoint] = useState(
+    isUpdate ? packageData?.pickupPoint : "Recepcja Główna"
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUserListExpanded, setIsUserListExpanded] = useState(false);
   const [usersList, setUsersList] = useState<User[]>([]);
@@ -76,7 +88,7 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
       u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSave = async () => {
+  const handleAddingPackage = async () => {
     if (!trackingNumber || !sender || !recipientId || !pickupPoint) {
       Alert.alert("Błąd", "Wypełnij wszystkie wymagane pola.");
       return;
@@ -104,6 +116,45 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
     }
   };
 
+  const handleUpdatingPackage = async () => {
+    if (!trackingNumber || !sender || !recipientId || !pickupPoint) {
+      Alert.alert("Błąd", "Wypełnij wszystkie wymagane pola.");
+      return;
+    }
+    if (!packageData) {
+      Alert.alert("Błąd", "Wystapil błąd.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await packageService.updatePackage(packageData.id, {
+        trackingNumber,
+        sender,
+        recipientId,
+        pickupPoint,
+        // photoUrl:
+      });
+
+      Alert.alert("Sukces", "Przesyłka zaktualizowana", [
+        { text: "OK", onPress: () => navigation.goBack() },
+      ]);
+    } catch (error: any) {
+      const msg =
+        error.response?.data?.message || "Wystąpił błąd podczas zapisu.";
+      Alert.alert("Błąd", msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!isUpdate) {
+      handleAddingPackage();
+    } else {
+      handleUpdatingPackage();
+    }
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -112,7 +163,7 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.form}>
           <Text variant="headlineSmall" style={styles.header}>
-            Rejestracja Przesyłki
+            {isUpdate ? "Aktualizuj Przesyłkę" : "Rejestracja Przesyłki"}
           </Text>
           <TextInput
             label="Numer przesyłki / Kod"
@@ -210,7 +261,7 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
             disabled={isSubmitting}
             style={styles.saveButton}
           >
-            Zarejestruj Paczkę
+            {isUpdate ? "Aktualizuj Paczkę" : "Zarejestruj Paczkę"}
           </Button>
         </View>
       </ScrollView>

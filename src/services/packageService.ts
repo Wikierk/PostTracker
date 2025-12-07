@@ -10,6 +10,14 @@ export interface CreatePackageRequest {
   photoUrl?: string;
 }
 
+export interface UpdatePackageRequest {
+  trackingNumber: string;
+  sender: string;
+  recipientId: string;
+  pickupPoint: string;
+  photoUrl?: string;
+}
+
 export const packageService = {
   registerPackage: async (data: CreatePackageRequest) => {
     const response = await client.post("/packages", data);
@@ -25,6 +33,10 @@ export const packageService = {
   },
   deliverPackage: async (packageId: string) => {
     const response = await client.put(`/packages/${packageId}/deliver`);
+    return response.data;
+  },
+  updatePackage: async (packageId: string, data: UpdatePackageRequest) => {
+    const response = await client.patch(`/packages/${packageId}`, data);
     return response.data;
   },
 };

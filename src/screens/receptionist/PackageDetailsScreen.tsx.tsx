@@ -86,7 +86,12 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
           <Button
             mode="outlined"
             icon="pencil"
-            onPress={() => console.log("Nawigacja do edycji (TODO)")}
+            onPress={() =>
+              navigation.navigate("PackageForm", {
+                packageData,
+                isUpdate: true,
+              })
+            }
             style={styles.actionButton}
           >
             Edytuj dane
