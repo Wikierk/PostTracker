@@ -1,28 +1,38 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Alert } from "react-native";
 import {
   TextInput,
   Button,
   HelperText,
   useTheme,
   Text,
+  List,
+  ActivityIndicator,
+  Divider,
+  Searchbar,
 } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "../../hooks/useAuth";
+import { packageService } from "../../services/packageService";
+import { userService, User } from "../../services/userService";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageForm">;
 
 const PackageFormScreen = ({ navigation, route }: Props) => {
   const theme = useTheme();
-  const { user } = useAuth();
   const scannedCode = route.params?.scannedCode || "";
 
   const [trackingNumber, setTrackingNumber] = useState(scannedCode);
   const [sender, setSender] = useState("");
-  const [recipient, setRecipient] = useState("");
+  const [recipientId, setRecipientId] = useState("");
+  const [recipientName, setRecipientName] = useState("");
   const [pickupPoint, setPickupPoint] = useState("Recepcja Główna");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUserListExpanded, setIsUserListExpanded] = useState(false);
+  const [usersList, setUsersList] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (scannedCode) {
@@ -30,15 +40,68 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
     }
   }, [scannedCode]);
 
-  const handleSave = () => {
-    console.log("Zapisuję przesyłkę:", {
-      trackingNumber,
-      sender,
-      recipient,
-      pickupPoint,
-    });
+  const toggleUserList = async () => {
+    if (!isUserListExpanded) {
+      if (usersList.length === 0) {
+        setIsLoadingUsers(true);
+        setIsUserListExpanded(true);
+        try {
+          const users = await userService.getAllUsers();
+          setUsersList(users);
+        } catch (error) {
+          console.error(error);
+          Alert.alert("Błąd", "Nie udało się pobrać listy pracowników.");
+          setIsUserListExpanded(false);
+        } finally {
+          setIsLoadingUsers(false);
+        }
+      } else {
+        setIsUserListExpanded(true);
+      }
+    } else {
+      setIsUserListExpanded(false);
+    }
+  };
 
-    navigation.goBack();
+  const handleSelectUser = (user: User) => {
+    setRecipientId(user.id);
+    setRecipientName(user.fullName);
+    setIsUserListExpanded(false);
+    setSearchQuery("");
+  };
+
+  const filteredUsers = usersList.filter(
+    (u) =>
+      u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSave = async () => {
+    if (!trackingNumber || !sender || !recipientId || !pickupPoint) {
+      Alert.alert("Błąd", "Wypełnij wszystkie wymagane pola.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await packageService.registerPackage({
+        trackingNumber,
+        sender,
+        recipientId,
+        pickupPoint,
+        // photoUrl:
+      });
+
+      Alert.alert("Sukces", "Przesyłka zarejestrowana", [
+        { text: "OK", onPress: () => navigation.goBack() },
+      ]);
+    } catch (error: any) {
+      const msg =
+        error.response?.data?.message || "Wystąpił błąd podczas zapisu.";
+      Alert.alert("Błąd", msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -46,77 +109,108 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       edges={["bottom", "left", "right"]}
     >
-      <ScrollView>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.form}>
           <Text variant="headlineSmall" style={styles.header}>
-            Nowa Przesyłka
+            Rejestracja Przesyłki
           </Text>
-
           <TextInput
             label="Numer przesyłki / Kod"
             value={trackingNumber}
             onChangeText={setTrackingNumber}
             mode="outlined"
             style={styles.input}
-            right={
-              user.role === "receptionist" ? (
-                <TextInput.Icon
-                  icon="barcode-scan"
-                  onPress={() =>
-                    navigation.navigate("ReceptionistApp", { screen: "Scan" })
-                  }
-                />
-              ) : null
-            }
+            right={<TextInput.Icon icon="barcode-scan" onPress={() => {}} />}
           />
-
-          {scannedCode ? (
-            <HelperText type="info" visible={true}>
-              Kod został wczytany automatycznie ze skanera.
-            </HelperText>
-          ) : null}
-
           <TextInput
-            label="Nadawca (np. DHL, Amazon)"
+            label="Nadawca (Firma/Osoba)"
             value={sender}
             onChangeText={setSender}
             mode="outlined"
             style={styles.input}
           />
+          <View>
+            <TextInput
+              label="Odbiorca (Pracownik)"
+              placeholder="Wybierz z listy..."
+              value={recipientName || recipientId}
+              mode="outlined"
+              style={styles.input}
+              editable={false}
+              right={
+                <TextInput.Icon
+                  icon={isUserListExpanded ? "chevron-up" : "account-search"}
+                  onPress={toggleUserList}
+                />
+              }
+            />
+            {isUserListExpanded && (
+              <View
+                style={[
+                  styles.inlineListContainer,
+                  { borderColor: theme.colors.outline },
+                ]}
+              >
+                <Searchbar
+                  placeholder="Szukaj pracownika..."
+                  onChangeText={setSearchQuery}
+                  value={searchQuery}
+                  style={styles.searchBar}
+                  inputStyle={{ minHeight: 0 }}
+                />
 
+                {isLoadingUsers ? (
+                  <ActivityIndicator animating={true} style={{ padding: 20 }} />
+                ) : (
+                  <ScrollView
+                    style={{ maxHeight: 200 }}
+                    nestedScrollEnabled={true}
+                  >
+                    {filteredUsers.map((user) => (
+                      <React.Fragment key={user.id}>
+                        <List.Item
+                          title={user.fullName}
+                          description={`${user.email} (${user.role})`}
+                          left={(props) => (
+                            <List.Icon {...props} icon="account" />
+                          )}
+                          onPress={() => handleSelectUser(user)}
+                          style={styles.listItem}
+                        />
+                        <Divider />
+                      </React.Fragment>
+                    ))}
+                    {filteredUsers.length === 0 && (
+                      <Text
+                        style={{
+                          padding: 15,
+                          textAlign: "center",
+                          opacity: 0.5,
+                        }}
+                      >
+                        Brak wyników
+                      </Text>
+                    )}
+                  </ScrollView>
+                )}
+              </View>
+            )}
+          </View>
           <TextInput
-            label="Adresat (Pracownik)"
-            value={recipient}
-            onChangeText={setRecipient}
-            mode="outlined"
-            style={styles.input}
-            right={<TextInput.Icon icon="account-search" />}
-          />
-
-          <TextInput
-            label="Punkt odbioru"
+            label="Punkt Odbioru"
             value={pickupPoint}
             onChangeText={setPickupPoint}
             mode="outlined"
             style={styles.input}
           />
-
-          <Button
-            icon="camera"
-            mode="outlined"
-            onPress={() => console.log("Otwórz aparat do zdjęcia paczki")}
-            style={styles.photoButton}
-          >
-            Dodaj zdjęcie paczki (Opcjonalne)
-          </Button>
-
           <Button
             mode="contained"
             onPress={handleSave}
+            loading={isSubmitting}
+            disabled={isSubmitting}
             style={styles.saveButton}
-            contentStyle={{ height: 50 }}
           >
-            Zarejestruj Przesyłkę
+            Zarejestruj Paczkę
           </Button>
         </View>
       </ScrollView>
@@ -126,15 +220,30 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { marginBottom: 20, textAlign: "center" },
+  scrollContent: { paddingBottom: 40 },
+  header: { marginBottom: 20, textAlign: "center", marginTop: 10 },
   form: { padding: 20 },
   input: { marginBottom: 12 },
-  photoButton: {
-    marginVertical: 10,
-    borderColor: "#ccc",
-    borderStyle: "dashed",
+  saveButton: { marginTop: 24, paddingVertical: 6 },
+  inlineListContainer: {
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+    marginTop: -5,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    elevation: 2,
   },
-  saveButton: { marginTop: 20 },
+  searchBar: {
+    elevation: 0,
+    backgroundColor: "transparent",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    height: 50,
+  },
+  listItem: {
+    paddingLeft: 4,
+  },
 });
 
 export default PackageFormScreen;
