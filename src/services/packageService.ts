@@ -39,4 +39,8 @@ export const packageService = {
     const response = await client.patch(`/packages/${packageId}`, data);
     return response.data;
   },
+  getPackageById: async (packageId: string): Promise<Package> => {
+    const response = await client.get(`/packages/${packageId}`);
+    return response.data;
+  },
 };

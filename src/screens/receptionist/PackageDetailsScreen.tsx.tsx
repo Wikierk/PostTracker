@@ -3,11 +3,12 @@ import { View, ScrollView, StyleSheet, Alert } from "react-native";
 import { Button, useTheme } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
-import { PackageStatus } from "../../types";
+import { Package, PackageStatus } from "../../types";
 import PackageStatusCard from "../../components/PackageStatusCard";
 import PackageDetailsCard from "../../components/PackageDetailsCard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { packageService } from "../../services/packageService";
+import { useFocusEffect } from "@react-navigation/native";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
 
@@ -15,6 +16,11 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
   const theme = useTheme();
   const { packageData } = route.params;
   const [status, setStatus] = useState<PackageStatus>(packageData.status);
+  const [packageFromApi, setPackageFromApi] = useState<Package>(packageData);
+
+  useFocusEffect(() => {
+    packageService.getPackageById(packageData.id).then(setPackageFromApi);
+  });
 
   const handleDeliver = () => {
     Alert.alert(
@@ -81,7 +87,7 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
             Wydaj Przesyłkę
           </Button>
         )}
-        <PackageDetailsCard package={packageData} />
+        <PackageDetailsCard package={packageFromApi} />
         <View style={styles.adminActions}>
           <Button
             mode="outlined"
