@@ -1,4 +1,5 @@
 import client from "../api/client";
+import { Package } from "../types";
 
 export interface CreatePackageRequest {
   trackingNumber: string;
@@ -11,6 +12,10 @@ export interface CreatePackageRequest {
 export const packageService = {
   registerPackage: async (data: CreatePackageRequest) => {
     const response = await client.post("/packages", data);
+    return response.data;
+  },
+  getAllPackages: async (): Promise<Package[]> => {
+    const response = await client.get("/packages");
     return response.data;
   },
 };
