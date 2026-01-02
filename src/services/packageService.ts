@@ -70,4 +70,8 @@ export const packageService = {
     const response = await client.get("/packages/stats/receptionist");
     return response.data;
   },
+  getProblems: async (): Promise<Package[]> => {
+    const response = await client.get("/packages/problems");
+    return response.data;
+  },
 };

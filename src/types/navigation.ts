@@ -36,4 +36,6 @@ export type RootStackParamList = {
   PackageOrder: { packageData: Package };
 
   Register: undefined;
+
+  ReceptionistProblems: undefined;
 };
