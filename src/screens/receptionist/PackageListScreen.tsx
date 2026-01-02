@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { FlatList, View, StyleSheet, Alert } from "react-native";
-import { Chip, Divider, FAB, Searchbar, useTheme } from "react-native-paper";
+import React, { useState, useCallback } from "react";
+import { FlatList, View, StyleSheet, RefreshControl } from "react-native";
+import {
+  Chip,
+  Divider,
+  FAB,
+  Searchbar,
+  useTheme,
+  ActivityIndicator,
+  Text,
+} from "react-native-paper";
 import { Package } from "../../types";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -13,8 +21,45 @@ const PackageListScreen = () => {
   const theme = useTheme();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [searchQuery, setSearchQuery] = useState("");
+
   const [packages, setPackages] = useState<Package[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"registered" | "delivered">(
+    "registered"
+  );
+
+  const fetchPackages = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await packageService.getAllPackages(searchQuery);
+
+      const filtered = data.filter((pkg) => {
+        if (filterStatus === "registered") {
+          return pkg.status === "registered" || pkg.status === "problem";
+        } else {
+          return pkg.status === "delivered";
+        }
+      });
+
+      filtered.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      setPackages(filtered);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, filterStatus]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPackages();
+    }, [fetchPackages])
+  );
 
   const renderItem = ({ item }: { item: Package }) => (
     <PackageListItem
@@ -25,16 +70,6 @@ const PackageListScreen = () => {
     />
   );
 
-  useFocusEffect(() => {
-    packageService.getAllPackages().then((data) => {
-      const formattedPackages = data.map((pkg: Package) => ({
-        ...pkg,
-        createdAt: pkg.createdAt.slice(0, 10),
-      }));
-      setPackages(formattedPackages);
-    });
-  });
-
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -42,26 +77,59 @@ const PackageListScreen = () => {
     >
       <View style={styles.header}>
         <Searchbar
-          placeholder="Szukaj..."
+          placeholder="Szukaj nadawcy lub numeru..."
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.searchBar}
+          onSubmitEditing={fetchPackages}
+          onIconPress={fetchPackages}
         />
         <View style={styles.filters}>
-          <Chip selected mode="outlined" style={{ marginRight: 8 }}>
-            Wszystkie
+          <Chip
+            selected={filterStatus === "registered"}
+            mode="outlined"
+            style={{ marginRight: 8 }}
+            onPress={() => setFilterStatus("registered")}
+            showSelectedOverlay
+          >
+            Do wydania
           </Chip>
-          <Chip mode="outlined">Do odbioru</Chip>
+          <Chip
+            selected={filterStatus === "delivered"}
+            mode="outlined"
+            onPress={() => setFilterStatus("delivered")}
+            showSelectedOverlay
+          >
+            Historia (Wydane)
+          </Chip>
         </View>
       </View>
 
-      <FlatList
-        data={packages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        ItemSeparatorComponent={() => <Divider />}
-        contentContainerStyle={{ paddingBottom: 80 }}
-      />
+      {loading && packages.length === 0 ? (
+        <ActivityIndicator
+          animating={true}
+          style={{ marginTop: 50 }}
+          color={theme.colors.primary}
+        />
+      ) : (
+        <FlatList
+          data={packages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          ItemSeparatorComponent={() => <Divider />}
+          contentContainerStyle={{ paddingBottom: 80 }}
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={fetchPackages} />
+          }
+          ListEmptyComponent={
+            <Text style={{ textAlign: "center", marginTop: 20, opacity: 0.6 }}>
+              {searchQuery
+                ? "Brak wyników wyszukiwania"
+                : "Brak przesyłek w tej kategorii"}
+            </Text>
+          }
+        />
+      )}
 
       <FAB
         icon="plus"

@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, StyleSheet, ScrollView, Alert, Image } from "react-native";
 import {
   TextInput,
   Button,
   HelperText,
   useTheme,
   Text,
-  List,
   ActivityIndicator,
-  Divider,
   Searchbar,
+  List,
+  Divider,
 } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { packageService } from "../../services/packageService";
 import { userService, User } from "../../services/userService";
+import { pickupPointService } from "../../services/pickupPointService";
 import { Package } from "../../types";
+
+import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageForm">;
 
@@ -25,32 +29,87 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
   const scannedCode = route.params?.scannedCode || "";
   const packageData: Package | undefined = route.params?.packageData;
   const isUpdate = route.params?.isUpdate || false;
+
   const [trackingNumber, setTrackingNumber] = useState(
-    scannedCode || (isUpdate && packageData ? packageData.trackingNumber : "")
+    scannedCode || packageData?.trackingNumber || ""
   );
-  const [sender, setSender] = useState(
-    isUpdate && packageData ? packageData.sender : ""
-  );
+  const [sender, setSender] = useState(packageData?.sender || "");
   const [recipientId, setRecipientId] = useState(
-    isUpdate && packageData?.recipient ? packageData.recipient.id : ""
+    packageData?.recipient?.id || ""
   );
   const [recipientName, setRecipientName] = useState(
-    isUpdate && packageData?.recipient ? packageData.recipient.fullName : ""
+    packageData?.recipient?.fullName || ""
   );
   const [pickupPoint, setPickupPoint] = useState(
-    isUpdate ? packageData?.pickupPoint : "Recepcja Główna"
+    packageData?.pickupPoint || "Recepcja Główna"
   );
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUserListExpanded, setIsUserListExpanded] = useState(false);
   const [usersList, setUsersList] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
 
   useEffect(() => {
-    if (scannedCode) {
-      setTrackingNumber(scannedCode);
-    }
+    if (scannedCode) setTrackingNumber(scannedCode);
   }, [scannedCode]);
+
+  const handleTakePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Brak uprawnień", "Potrzebujemy dostępu do aparatu.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const handleGetLocation = async () => {
+    setIsLocating(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Brak uprawnień", "Potrzebujemy dostępu do lokalizacji.");
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+
+      const result = await pickupPointService.findNearest(latitude, longitude);
+
+      if (result.found && result.point) {
+        setPickupPoint(result.point.name);
+        Alert.alert(
+          "Lokalizacja wykryta",
+          `Znajdujesz się w pobliżu: ${result.point.name}`
+        );
+      } else {
+        const rawCoords = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        setPickupPoint(rawCoords);
+        Alert.alert(
+          "Nieznana lokalizacja",
+          "Nie wykryto zdefiniowanego punktu odbioru w pobliżu. Wstawiono współrzędne GPS."
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert(
+        "Błąd",
+        "Nie udało się pobrać lokalizacji lub połączyć z serwerem."
+      );
+    } finally {
+      setIsLocating(false);
+    }
+  };
 
   const toggleUserList = async () => {
     if (!isUserListExpanded) {
@@ -61,7 +120,6 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
           const users = await userService.getAllUsers();
           setUsersList(users);
         } catch (error) {
-          console.error(error);
           Alert.alert("Błąd", "Nie udało się pobrać listy pracowników.");
           setIsUserListExpanded(false);
         } finally {
@@ -88,7 +146,7 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
       u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddingPackage = async () => {
+  const handleSubmit = async () => {
     if (!trackingNumber || !sender || !recipientId || !pickupPoint) {
       Alert.alert("Błąd", "Wypełnij wszystkie wymagane pola.");
       return;
@@ -96,62 +154,34 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
 
     setIsSubmitting(true);
     try {
-      await packageService.registerPackage({
-        trackingNumber,
-        sender,
-        recipientId,
-        pickupPoint,
-        // photoUrl:
-      });
-
-      Alert.alert("Sukces", "Przesyłka zarejestrowana", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
+      if (isUpdate && packageData) {
+        await packageService.updatePackage(packageData.id, {
+          trackingNumber,
+          sender,
+          recipientId,
+          pickupPoint,
+        });
+        Alert.alert("Sukces", "Przesyłka zaktualizowana", [
+          { text: "OK", onPress: () => navigation.goBack() },
+        ]);
+      } else {
+        await packageService.registerPackage({
+          trackingNumber,
+          sender,
+          recipientId,
+          pickupPoint,
+          photo: photoUri,
+        });
+        Alert.alert("Sukces", "Przesyłka zarejestrowana", [
+          { text: "OK", onPress: () => navigation.goBack() },
+        ]);
+      }
     } catch (error: any) {
-      const msg =
-        error.response?.data?.message || "Wystąpił błąd podczas zapisu.";
-      Alert.alert("Błąd", msg);
+      console.error(error);
+      const msg = error.response?.data?.message || "Wystąpił błąd.";
+      Alert.alert("Błąd", Array.isArray(msg) ? msg[0] : msg);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleUpdatingPackage = async () => {
-    if (!trackingNumber || !sender || !recipientId || !pickupPoint) {
-      Alert.alert("Błąd", "Wypełnij wszystkie wymagane pola.");
-      return;
-    }
-    if (!packageData) {
-      Alert.alert("Błąd", "Wystapil błąd.");
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      await packageService.updatePackage(packageData.id, {
-        trackingNumber,
-        sender,
-        recipientId,
-        pickupPoint,
-        // photoUrl:
-      });
-
-      Alert.alert("Sukces", "Przesyłka zaktualizowana", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
-    } catch (error: any) {
-      const msg =
-        error.response?.data?.message || "Wystąpił błąd podczas zapisu.";
-      Alert.alert("Błąd", msg);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!isUpdate) {
-      handleAddingPackage();
-    } else {
-      handleUpdatingPackage();
     }
   };
 
@@ -165,25 +195,40 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
           <Text variant="headlineSmall" style={styles.header}>
             {isUpdate ? "Aktualizuj Przesyłkę" : "Rejestracja Przesyłki"}
           </Text>
+
           <TextInput
             label="Numer przesyłki / Kod"
             value={trackingNumber}
             onChangeText={setTrackingNumber}
             mode="outlined"
             style={styles.input}
-            right={<TextInput.Icon icon="barcode-scan" onPress={() => {}} />}
+            right={
+              <TextInput.Icon
+                icon="barcode-scan"
+                onPress={() =>
+                  navigation.navigate("ReceptionistApp", { screen: "Scan" })
+                }
+              />
+            }
           />
+          {scannedCode ? (
+            <HelperText type="info" visible={true}>
+              Kod wczytany ze skanera.
+            </HelperText>
+          ) : null}
+
           <TextInput
-            label="Nadawca (Firma/Osoba)"
+            label="Nadawca"
             value={sender}
             onChangeText={setSender}
             mode="outlined"
             style={styles.input}
           />
+
           <View>
             <TextInput
-              label="Odbiorca (Pracownik)"
-              placeholder="Wybierz z listy..."
+              label="Odbiorca"
+              placeholder="Wybierz..."
               value={recipientName || recipientId}
               mode="outlined"
               style={styles.input}
@@ -203,13 +248,12 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
                 ]}
               >
                 <Searchbar
-                  placeholder="Szukaj pracownika..."
+                  placeholder="Szukaj..."
                   onChangeText={setSearchQuery}
                   value={searchQuery}
                   style={styles.searchBar}
                   inputStyle={{ minHeight: 0 }}
                 />
-
                 {isLoadingUsers ? (
                   <ActivityIndicator animating={true} style={{ padding: 20 }} />
                 ) : (
@@ -221,7 +265,7 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
                       <React.Fragment key={user.id}>
                         <List.Item
                           title={user.fullName}
-                          description={`${user.email} (${user.role})`}
+                          description={user.email}
                           left={(props) => (
                             <List.Icon {...props} icon="account" />
                           )}
@@ -231,37 +275,58 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
                         <Divider />
                       </React.Fragment>
                     ))}
-                    {filteredUsers.length === 0 && (
-                      <Text
-                        style={{
-                          padding: 15,
-                          textAlign: "center",
-                          opacity: 0.5,
-                        }}
-                      >
-                        Brak wyników
-                      </Text>
-                    )}
                   </ScrollView>
                 )}
               </View>
             )}
           </View>
-          <TextInput
-            label="Punkt Odbioru"
-            value={pickupPoint}
-            onChangeText={setPickupPoint}
+
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TextInput
+              label="Punkt Odbioru"
+              value={pickupPoint}
+              onChangeText={setPickupPoint}
+              mode="outlined"
+              style={[styles.input, { flex: 1 }]}
+            />
+            <Button
+              mode="outlined"
+              icon="crosshairs-gps"
+              loading={isLocating}
+              onPress={handleGetLocation}
+              style={{
+                marginLeft: 10,
+                marginTop: -10,
+                height: 50,
+                justifyContent: "center",
+              }}
+            >
+              GPS
+            </Button>
+          </View>
+
+          <Button
+            icon="camera"
             mode="outlined"
-            style={styles.input}
-          />
+            onPress={handleTakePhoto}
+            style={styles.photoButton}
+          >
+            {photoUri ? "Zmień zdjęcie" : "Zrób zdjęcie paczki"}
+          </Button>
+
+          {photoUri && (
+            <Image source={{ uri: photoUri }} style={styles.previewImage} />
+          )}
+
           <Button
             mode="contained"
-            onPress={handleSave}
+            onPress={handleSubmit}
             loading={isSubmitting}
             disabled={isSubmitting}
             style={styles.saveButton}
+            contentStyle={{ height: 50 }}
           >
-            {isUpdate ? "Aktualizuj Paczkę" : "Zarejestruj Paczkę"}
+            {isUpdate ? "Zapisz Zmiany" : "Zarejestruj"}
           </Button>
         </View>
       </ScrollView>
@@ -275,7 +340,18 @@ const styles = StyleSheet.create({
   header: { marginBottom: 20, textAlign: "center", marginTop: 10 },
   form: { padding: 20 },
   input: { marginBottom: 12 },
-  saveButton: { marginTop: 24, paddingVertical: 6 },
+  photoButton: {
+    marginVertical: 10,
+    borderColor: "#ccc",
+    borderStyle: "dashed",
+  },
+  saveButton: { marginTop: 20 },
+  previewImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
   inlineListContainer: {
     borderWidth: 1,
     borderRadius: 8,
@@ -292,9 +368,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
     height: 50,
   },
-  listItem: {
-    paddingLeft: 4,
-  },
+  listItem: { paddingLeft: 4 },
 });
 
 export default PackageFormScreen;
