@@ -1,57 +1,78 @@
-import React, { useState } from "react";
-import { FlatList, View, StyleSheet } from "react-native";
-import { Chip, Divider, FAB, Searchbar, useTheme } from "react-native-paper";
+import React, { useCallback, useState } from "react";
+import {
+  FlatList,
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
+import {
+  Chip,
+  Divider,
+  FAB,
+  Searchbar,
+  useTheme,
+  Text,
+} from "react-native-paper";
 import { Package } from "../../types";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import PackageListItem from "../../components/PackageListItem";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const MOCK_PACKAGES: Package[] = [
-  {
-    id: "1",
-    trackingNumber: "DHL-12345",
-    sender: "Amazon",
-    recipient: { id: "1", fullName: "Jan Kowalski" },
-    status: "registered",
-    pickupPoint: "Recepcja A",
-    createdAt: "2023-11-20",
-  },
-  {
-    id: "2",
-    trackingNumber: "UPS-99999",
-    sender: "Zalando",
-    recipient: { id: "1", fullName: "Jan Kowalski" },
-    status: "delivered",
-    pickupPoint: "Recepcja B",
-    createdAt: "2023-11-19",
-  },
-  {
-    id: "3",
-    trackingNumber: "INPOST-555",
-    sender: "Allegro",
-    recipient: { id: "1", fullName: "Jan Kowalski" },
-    status: "registered",
-    pickupPoint: "Recepcja A",
-    createdAt: "2023-11-21",
-  },
-  {
-    id: "4",
-    trackingNumber: "FEDEX-001",
-    sender: "Apple",
-    recipient: { id: "1", fullName: "Jan Kowalski" },
-    status: "registered",
-    pickupPoint: "Recepcja A",
-    createdAt: "2023-11-21",
-  },
-];
+import { packageService } from "../../services/packageService";
 
 const PackageListScreen = () => {
   const theme = useTheme();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [searchQuery, setSearchQuery] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<"registered" | "delivered">(
+    "registered"
+  );
+  const [packages, setPackages] = useState<Package[]>([]);
+
+  const fetchPackages = useCallback(async () => {
+    try {
+      const data = await packageService.getAllPackages(searchQuery);
+
+      const filtered = data.filter((pkg) => {
+        if (filterStatus === "registered") {
+          return pkg.status === "registered" || pkg.status === "problem";
+        } else {
+          return pkg.status === "delivered";
+        }
+      });
+
+      filtered.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      setPackages(filtered);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setInitialLoading(false);
+      setRefreshing(false);
+    }
+  }, [searchQuery, filterStatus]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (packages.length === 0) {
+        setInitialLoading(true);
+      }
+      fetchPackages();
+    }, [fetchPackages])
+  );
+
+  const onPullToRefresh = () => {
+    setRefreshing(true);
+    fetchPackages();
+  };
 
   const renderItem = ({ item }: { item: Package }) => (
     <PackageListItem
@@ -69,27 +90,62 @@ const PackageListScreen = () => {
     >
       <View style={styles.header}>
         <Searchbar
-          placeholder="Szukaj..."
+          placeholder="Szukaj nadawcy lub numeru..."
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.searchBar}
+          onSubmitEditing={fetchPackages}
+          onIconPress={fetchPackages}
         />
         <View style={styles.filters}>
-          <Chip selected mode="outlined" style={{ marginRight: 8 }}>
-            Wszystkie
+          <Chip
+            selected={filterStatus === "registered"}
+            mode="outlined"
+            style={{ marginRight: 8 }}
+            onPress={() => setFilterStatus("registered")}
+            showSelectedOverlay
+          >
+            Do wydania
           </Chip>
-          <Chip mode="outlined">Do odbioru</Chip>
+          <Chip
+            selected={filterStatus === "delivered"}
+            mode="outlined"
+            onPress={() => setFilterStatus("delivered")}
+            showSelectedOverlay
+          >
+            Historia (Wydane)
+          </Chip>
         </View>
       </View>
 
-      <FlatList
-        data={MOCK_PACKAGES}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        ItemSeparatorComponent={() => <Divider />}
-        contentContainerStyle={{ paddingBottom: 80 }}
-      />
-
+      {initialLoading && packages.length === 0 ? (
+        <ActivityIndicator
+          animating={true}
+          style={{ marginTop: 50 }}
+          color={theme.colors.primary}
+        />
+      ) : (
+        <FlatList
+          data={packages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          ItemSeparatorComponent={() => <Divider />}
+          contentContainerStyle={{ paddingBottom: 80 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onPullToRefresh}
+            />
+          }
+          ListEmptyComponent={
+            <Text style={{ textAlign: "center", marginTop: 20, opacity: 0.6 }}>
+              {searchQuery
+                ? "Brak wyników wyszukiwania"
+                : "Brak przesyłek w tej kategorii"}
+            </Text>
+          }
+        />
+      )}
       <FAB
         icon="plus"
         label="Dodaj"

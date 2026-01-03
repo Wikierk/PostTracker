@@ -23,14 +23,14 @@ const PackageListScreen = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [packages, setPackages] = useState<Package[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"registered" | "delivered">(
     "registered"
   );
 
   const fetchPackages = useCallback(async () => {
-    setLoading(true);
     try {
       const data = await packageService.getAllPackages(searchQuery);
 
@@ -51,15 +51,24 @@ const PackageListScreen = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setRefreshing(false);
     }
   }, [searchQuery, filterStatus]);
 
   useFocusEffect(
     useCallback(() => {
+      if (packages.length === 0) {
+        setInitialLoading(true);
+      }
       fetchPackages();
     }, [fetchPackages])
   );
+
+  const onPullToRefresh = () => {
+    setRefreshing(true);
+    fetchPackages();
+  };
 
   const renderItem = ({ item }: { item: Package }) => (
     <PackageListItem
@@ -105,7 +114,7 @@ const PackageListScreen = () => {
         </View>
       </View>
 
-      {loading && packages.length === 0 ? (
+      {initialLoading && packages.length === 0 ? (
         <ActivityIndicator
           animating={true}
           style={{ marginTop: 50 }}
@@ -119,7 +128,10 @@ const PackageListScreen = () => {
           ItemSeparatorComponent={() => <Divider />}
           contentContainerStyle={{ paddingBottom: 80 }}
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={fetchPackages} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onPullToRefresh}
+            />
           }
           ListEmptyComponent={
             <Text style={{ textAlign: "center", marginTop: 20, opacity: 0.6 }}>
