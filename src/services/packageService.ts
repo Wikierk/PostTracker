@@ -6,6 +6,11 @@ export interface ReceptionistStats {
   receivedToday: number;
 }
 
+export interface AdminStats {
+  employeesCount: number;
+  packagesThisMonth: number;
+}
+
 export interface DeliverPackageRequest {
   pickupCode: string;
 }
@@ -70,6 +75,11 @@ export const packageService = {
     const response = await client.get("/packages/stats/receptionist");
     return response.data;
   },
+  getAdminStats: async (): Promise<AdminStats> => {
+    const response = await client.get("/packages/stats/admin");
+    return response.data;
+  },
+
   getProblems: async (): Promise<Package[]> => {
     const response = await client.get("/packages/problems");
     return response.data;

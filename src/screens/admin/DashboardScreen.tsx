@@ -1,15 +1,34 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Card, Text, Button, useTheme, Avatar } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AdminStats, packageService } from "../../services/packageService";
 
 const AdminDashboardScreen = () => {
   const theme = useTheme();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchStats = async () => {
+        try {
+          const data = await packageService.getAdminStats();
+          setStats(data);
+        } catch (e) {
+          console.error("Błąd pobierania statystyk:", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchStats();
+    }, [])
+  );
 
   return (
     <SafeAreaView
@@ -23,35 +42,47 @@ const AdminDashboardScreen = () => {
       <View style={styles.statsRow}>
         <Card style={styles.card}>
           <Card.Content style={styles.cardContent}>
-            <Avatar.Icon
-              size={48}
-              icon="account-group"
-              style={{ backgroundColor: theme.colors.secondaryContainer }}
-              color={theme.colors.onSecondaryContainer}
-            />
-            <Text variant="titleLarge" style={styles.statNumber}>
-              24
-            </Text>
-            <Text variant="bodySmall" style={styles.statLabel}>
-              Pracowników
-            </Text>
+            {loading || stats == null ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <>
+                <Avatar.Icon
+                  size={48}
+                  icon="account-group"
+                  style={{ backgroundColor: theme.colors.secondaryContainer }}
+                  color={theme.colors.onSecondaryContainer}
+                />
+                <Text variant="titleLarge" style={styles.statNumber}>
+                  {stats.employeesCount}
+                </Text>
+                <Text variant="bodySmall" style={styles.statLabel}>
+                  Pracowników
+                </Text>
+              </>
+            )}
           </Card.Content>
         </Card>
 
         <Card style={styles.card}>
           <Card.Content style={styles.cardContent}>
-            <Avatar.Icon
-              size={48}
-              icon="package-variant"
-              style={{ backgroundColor: theme.colors.secondaryContainer }}
-              color={theme.colors.onSecondaryContainer}
-            />
-            <Text variant="titleLarge" style={styles.statNumber}>
-              142
-            </Text>
-            <Text variant="bodySmall" style={styles.statLabel}>
-              Paczki (Msc)
-            </Text>
+            {loading || stats == null ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <>
+                <Avatar.Icon
+                  size={48}
+                  icon="package-variant"
+                  style={{ backgroundColor: theme.colors.secondaryContainer }}
+                  color={theme.colors.onSecondaryContainer}
+                />
+                <Text variant="titleLarge" style={styles.statNumber}>
+                  {stats.packagesThisMonth}
+                </Text>
+                <Text variant="bodySmall" style={styles.statLabel}>
+                  Paczki (Msc)
+                </Text>
+              </>
+            )}
           </Card.Content>
         </Card>
       </View>
