@@ -1,15 +1,44 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
-import { Card, Text, Button, useTheme } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
+import {
+  Card,
+  Text,
+  Button,
+  useTheme,
+  ActivityIndicator,
+} from "react-native-paper";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  packageService,
+  ReceptionistStats,
+} from "../../services/packageService";
 
 const DashboardScreen = () => {
   const theme = useTheme();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const [stats, setStats] = useState<ReceptionistStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchStats = async () => {
+        try {
+          const data = await packageService.getReceptionistStats();
+          setStats(data);
+        } catch (e) {
+          console.error("Błąd pobierania statystyk:", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchStats();
+    }, [])
+  );
 
   return (
     <SafeAreaView
@@ -22,24 +51,32 @@ const DashboardScreen = () => {
 
       <View style={styles.statsContainer}>
         <Card style={styles.card}>
-          <Card.Content>
-            <Text
-              variant="titleLarge"
-              style={{ color: theme.colors.primary, fontWeight: "bold" }}
-            >
-              5
-            </Text>
+          <Card.Content style={{ alignItems: "center" }}>
+            {loading ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <Text
+                variant="displayMedium"
+                style={{ color: theme.colors.primary, fontWeight: "bold" }}
+              >
+                {stats?.toDeliver || 0}
+              </Text>
+            )}
             <Text variant="bodyMedium">Do wydania</Text>
           </Card.Content>
         </Card>
         <Card style={styles.card}>
-          <Card.Content>
-            <Text
-              variant="titleLarge"
-              style={{ color: theme.colors.primary, fontWeight: "bold" }}
-            >
-              12
-            </Text>
+          <Card.Content style={{ alignItems: "center" }}>
+            {loading ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <Text
+                variant="displayMedium"
+                style={{ color: theme.colors.primary, fontWeight: "bold" }}
+              >
+                {stats?.receivedToday || 0}
+              </Text>
+            )}
             <Text variant="bodyMedium">Dziś przyjęte</Text>
           </Card.Content>
         </Card>
@@ -54,7 +91,6 @@ const DashboardScreen = () => {
         icon="barcode-scan"
         style={styles.button}
         contentStyle={{ height: 60 }}
-        // Nawigujemy do ReceptionistApp -> Scan
         onPress={() =>
           navigation.navigate("ReceptionistApp", { screen: "Scan" })
         }
@@ -71,6 +107,16 @@ const DashboardScreen = () => {
       >
         Rejestracja ręczna
       </Button>
+      <Button
+        mode="outlined"
+        icon="alert-circle-outline"
+        style={[styles.button, { borderColor: theme.colors.error }]}
+        textColor={theme.colors.error}
+        contentStyle={{ height: 50 }}
+        onPress={() => navigation.navigate("ReceptionistProblems")}
+      >
+        Zgłoszone Problemy
+      </Button>
     </SafeAreaView>
   );
 };
@@ -80,7 +126,7 @@ const styles = StyleSheet.create({
   title: { marginBottom: 20, marginTop: 10 },
   subtitle: { marginBottom: 10, marginTop: 20, fontWeight: "bold" },
   statsContainer: { flexDirection: "row", justifyContent: "space-between" },
-  card: { width: "48%", alignItems: "center", justifyContent: "center" },
+  card: { width: "48%", justifyContent: "center" },
   button: { marginTop: 10, justifyContent: "center" },
 });
 
