@@ -6,6 +6,7 @@ import { RootStackParamList } from "../../types/navigation";
 import PackageStatusCard from "../../components/PackageStatusCard";
 import PackageDetailsCard from "../../components/PackageDetailsCard";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { packageService } from "../../services/packageService";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
 
@@ -32,13 +33,23 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
   };
 
   const handleResolveProblem = () => {
-    Alert.alert("Rozwiąż problem", "Czy oznaczyć problem jako rozwiązany?", [
-      { text: "Anuluj", style: "cancel" },
-      {
-        text: "Tak, rozwiąż",
-        onPress: () => console.log("Problem rozwiązany"),
-      },
-    ]);
+    Alert.alert(
+      packageData.problemDescription || "Brak opisu problemu",
+      "Czy oznaczyć problem jako rozwiązany?",
+      [
+        { text: "Anuluj", style: "cancel" },
+        {
+          text: "Tak, rozwiąż",
+          onPress: () => {
+            // tu trzeba jeszcze dodać obsluge
+            // packageService.updatePackage(packageData.id, {
+            //   status: "problem solved",
+            // });
+            navigation.goBack();
+          },
+        },
+      ]
+    );
   };
 
   return (

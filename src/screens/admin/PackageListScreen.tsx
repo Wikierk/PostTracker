@@ -29,9 +29,9 @@ const PackageListScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<"registered" | "delivered">(
-    "registered"
-  );
+  const [filterStatus, setFilterStatus] = useState<
+    "registered" | "delivered" | "problem"
+  >("registered");
   const [packages, setPackages] = useState<Package[]>([]);
 
   const fetchPackages = useCallback(async () => {
@@ -40,9 +40,11 @@ const PackageListScreen = () => {
 
       const filtered = data.filter((pkg) => {
         if (filterStatus === "registered") {
-          return pkg.status === "registered" || pkg.status === "problem";
-        } else {
+          return pkg.status === "registered";
+        } else if (filterStatus === "delivered") {
           return pkg.status === "delivered";
+        } else if (filterStatus === "problem") {
+          return pkg.status === "problem";
         }
       });
 
@@ -110,10 +112,19 @@ const PackageListScreen = () => {
           <Chip
             selected={filterStatus === "delivered"}
             mode="outlined"
+            style={{ marginRight: 8 }}
             onPress={() => setFilterStatus("delivered")}
             showSelectedOverlay
           >
-            Historia (Wydane)
+            Wydane
+          </Chip>
+          <Chip
+            selected={filterStatus === "problem"}
+            mode="outlined"
+            onPress={() => setFilterStatus("problem")}
+            showSelectedOverlay
+          >
+            Problem
           </Chip>
         </View>
       </View>

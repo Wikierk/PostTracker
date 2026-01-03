@@ -8,6 +8,11 @@ type PackageListItemProps = Package & {
   onPress?: () => void;
 };
 
+type StatusStyle = {
+  color: string;
+  label: string;
+};
+
 const PackageListItem = (props: PackageListItemProps) => {
   const { user } = useAuth();
   const theme = useTheme();
@@ -21,6 +26,19 @@ const PackageListItem = (props: PackageListItemProps) => {
       return `Do: ${recipientName} | ${props.trackingNumber}`;
     }
   };
+
+  const getStatusStyles = (): StatusStyle => {
+    switch (props.status) {
+      case "registered":
+        return { color: "orange", label: "W RECEPCJI" };
+      case "delivered":
+        return { color: "green", label: "ODEBRANA" };
+      case "problem":
+        return { color: "red", label: "PROBLEM" };
+    }
+  };
+
+  const statusStyle = getStatusStyles();
 
   return (
     <List.Item
@@ -44,13 +62,13 @@ const PackageListItem = (props: PackageListItemProps) => {
         >
           <Text
             style={{
-              color: props.status === "delivered" ? "green" : "orange",
+              color: statusStyle.color,
               marginRight: 10,
               fontSize: 12,
               fontWeight: "bold",
             }}
           >
-            {props.status === "delivered" ? "ODEBRANA" : "W RECEPCJI"}
+            {statusStyle.label}
           </Text>
           <List.Icon icon="chevron-right" />
         </View>

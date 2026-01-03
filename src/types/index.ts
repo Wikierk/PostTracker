@@ -20,4 +20,5 @@ export type Package = {
   pickupPoint: string;
   photoUrl?: string;
   createdAt: string;
+  problemDescription?: string;
 };
