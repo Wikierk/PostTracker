@@ -1,7 +1,13 @@
-import { MD3LightTheme as DefaultTheme } from "react-native-paper";
-import { DefaultTheme as NavigationDefaultTheme } from "@react-navigation/native";
+import {
+  MD3LightTheme as PaperLight,
+  MD3DarkTheme as PaperDark,
+} from "react-native-paper";
+import {
+  DefaultTheme as NavLight,
+  DarkTheme as NavDark,
+} from "@react-navigation/native";
 
-const CustomColors = {
+const LightColors = {
   primary: "rgb(0, 104, 116)",
   background: "rgb(242, 242, 242)",
   card: "rgb(255, 255, 255)",
@@ -10,18 +16,31 @@ const CustomColors = {
   notification: "rgb(255, 69, 58)",
 };
 
-export const paperTheme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    ...CustomColors,
-  },
+const DarkColors = {
+  primary: "rgb(90, 200, 250)",
+  background: "rgb(18, 18, 18)",
+  card: "rgb(28, 28, 30)",
+  text: "rgb(242, 242, 242)",
+  border: "rgb(60, 60, 67)",
+  notification: "rgb(255, 69, 58)",
 };
 
-export const navigationTheme = {
-  ...NavigationDefaultTheme,
-  colors: {
-    ...NavigationDefaultTheme.colors,
-    ...CustomColors,
-  },
+export const paperLightTheme = {
+  ...PaperLight,
+  colors: { ...PaperLight.colors, ...LightColors },
+};
+
+export const paperDarkTheme = {
+  ...PaperDark,
+  colors: { ...PaperDark.colors, ...DarkColors },
+};
+
+export const navigationLightTheme = {
+  ...NavLight,
+  colors: { ...NavLight.colors, ...LightColors },
+};
+
+export const navigationDarkTheme = {
+  ...NavDark,
+  colors: { ...NavDark.colors, ...DarkColors },
 };
