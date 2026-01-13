@@ -84,4 +84,11 @@ export const packageService = {
     const response = await client.get("/packages/problems");
     return response.data;
   },
+
+    reportProblem: async (packageId: string, description: string) => {
+    const response = await client.put(`/packages/${packageId}/problem`, {
+      description,
+    });
+    return response.data;
+  },
 };

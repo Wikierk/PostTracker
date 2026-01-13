@@ -14,11 +14,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PackageOrder">;
 
-const PackageOrderScreen = ({ route }: Props) => {
+const PackageOrderScreen = ({ route, navigation }: Props) => {
   const theme = useTheme();
   const { packageData } = route.params || {};
 
-  // TODO: W przyszłości kod odbioru powinien przychodzić z backendu (z obiektu packageData)
   const pickupCode = "530629";
 
   const handleCopyCode = async () => {
@@ -33,21 +32,7 @@ const PackageOrderScreen = ({ route }: Props) => {
   };
 
   const handleReportProblem = () => {
-    Alert.alert(
-      "Zgłoś problem",
-      `Co jest nie tak z przesyłką od ${packageData?.sender || "nadawcy"}?`,
-      [
-        { text: "Anuluj", style: "cancel" },
-        {
-          text: "Paczka uszkodzona",
-          onPress: () => console.log("Zgłoszono: uszkodzenie"),
-        },
-        {
-          text: "Inny problem",
-          onPress: () => console.log("Zgłoszono: inny"),
-        },
-      ]
-    );
+    navigation.navigate("ReportProblem", { packageData });
   };
 
   if (!packageData) return null;
@@ -149,11 +134,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#d4edda",
     borderRadius: 10,
   },
-  readyText: {
-    color: "#155724",
-    fontWeight: "bold",
-    flexWrap: "wrap",
-  },
+  readyText: { color: "#155724", fontWeight: "bold", flexWrap: "wrap" },
   statusHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -187,19 +168,9 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "center",
   },
-  copyButton: {
-    width: "80%",
-    borderRadius: 8,
-    backgroundColor: "#0770e1ff",
-  },
-  copyButtonLabel: {
-    fontSize: 16,
-  },
-  infoCard: {
-    marginBottom: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
+  copyButton: { width: "80%", borderRadius: 8, backgroundColor: "#0770e1ff" },
+  copyButtonLabel: { fontSize: 16 },
+  infoCard: { marginBottom: 20, paddingVertical: 10, borderRadius: 10 },
   detailRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -207,10 +178,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingHorizontal: 5,
   },
-  divider: {
-    marginVertical: 10,
-    marginHorizontal: -5,
-  },
+  divider: { marginVertical: 10, marginHorizontal: -5 },
   problemButton: {
     marginHorizontal: 0,
     marginTop: 10,
@@ -218,10 +186,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 10,
   },
-  confirmButtonLabel: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+  confirmButtonLabel: { fontSize: 18, fontWeight: "bold" },
 });
 
 export default PackageOrderScreen;

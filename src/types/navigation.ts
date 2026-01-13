@@ -33,6 +33,8 @@ export type RootStackParamList = {
 
   PackageDetails: { packageData: Package };
 
+  ReportProblem: { packageData: Package };
+
   PackageOrder: { packageData: Package };
 
   Register: undefined;

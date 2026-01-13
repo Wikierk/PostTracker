@@ -18,6 +18,7 @@ import AdminPackageFormScreen from "../screens/admin/PackageFormScreen";
 import ReceptionistPackageDetailsScreen from "../screens/receptionist/PackageDetailsScreen.tsx";
 import ReceptionistPackageFormScreen from "../screens/receptionist/PackageFormScreen";
 import ReceptionistProblemsScreen from "../screens/receptionist/ProblemsScreen";
+import ReportProblemScreen from "../screens/employee/ReportProblemScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -113,6 +114,16 @@ const RootNavigator = () => {
             component={PackageOrderScreen}
             options={{
               title: "Odbiór Przesyłki",
+              headerShown: true,
+              headerBackTitle: "Wróć",
+              presentation: "modal",
+            }}
+          />
+          <Stack.Screen
+            name="ReportProblem"
+            component={ReportProblemScreen}
+            options={{
+              title: "Zgłoś problem",
               headerShown: true,
               headerBackTitle: "Wróć",
               presentation: "modal",
