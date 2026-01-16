@@ -22,8 +22,7 @@ import PackageOrderScreen from "../screens/employee/PackageOrderScreen";
 import ReportProblemScreen from "../screens/employee/ReportProblemScreen";
 
 import UsersListScreen from "../screens/admin/UsersListScreen";
-// WAZNE: import z rozszerzeniem .tsx (rozwiązuje problem "invalid component")
-import UserFormScreen from "../screens/admin/UserFormScreen.tsx";
+import UserFormScreen from "../screens/admin/UserFormScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
