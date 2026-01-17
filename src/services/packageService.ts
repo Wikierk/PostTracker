@@ -11,6 +11,23 @@ export interface AdminStats {
   packagesThisMonth: number;
 }
 
+export interface CreatePackageRequest {
+  trackingNumber: string;
+  sender: string;
+  recipientId: string;
+  pickupPoint: string;
+  photoUrl?: string;
+}
+
+export interface UpdatePackageRequest {
+  trackingNumber?: string;
+  sender?: string;
+  recipientId?: string;
+  pickupPoint?: string;
+  photoUrl?: string;
+  status?: string;
+}
+
 export interface DeliverPackageRequest {
   pickupCode: string;
 }
@@ -61,7 +78,7 @@ export const packageService = {
     return response.data;
   },
 
-  updatePackage: async (packageId: string, data: any) => {
+  updatePackage: async (packageId: string, data: UpdatePackageRequest) => {
     const response = await client.patch(`/packages/${packageId}`, data);
     return response.data;
   },
@@ -85,7 +102,7 @@ export const packageService = {
     return response.data;
   },
 
-    reportProblem: async (packageId: string, description: string) => {
+  reportProblem: async (packageId: string, description: string) => {
     const response = await client.put(`/packages/${packageId}/problem`, {
       description,
     });

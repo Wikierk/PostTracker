@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, ScrollView, StyleSheet, Alert } from "react-native";
 import { Text, Button, useTheme, Card, Avatar } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -13,6 +13,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
 const PackageDetailsScreen = ({ route, navigation }: Props) => {
   const theme = useTheme();
   const { packageData } = route.params;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleDelete = () => {
     Alert.alert(
@@ -23,32 +24,55 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
         {
           text: "Usuń trwale",
           style: "destructive",
-          onPress: () => {
-            console.log("Admin usunął paczkę ID:", packageData.id);
-            navigation.goBack();
+          onPress: async () => {
+            try {
+              setIsSubmitting(true);
+              await packageService.deletePackage(packageData.id);
+              console.log("Admin usunął paczkę ID:", packageData.id);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert("Błąd", "Nie udało się usunąć przesyłki.");
+            } finally {
+              setIsSubmitting(false);
+            }
           },
         },
-      ]
+      ],
     );
   };
 
   const handleResolveProblem = () => {
+    const description =
+      (packageData as any).problemDescription || "Brak opisu problemu";
+
     Alert.alert(
-      packageData.problemDescription || "Brak opisu problemu",
-      "Czy oznaczyć problem jako rozwiązany?",
+      "Rozwiąż zgłoszenie",
+      `Opis problemu: "${description}"\n\nCzy oznaczyć problem jako rozwiązany? Status paczki wróci do 'W RECEPCJI'.`,
       [
         { text: "Anuluj", style: "cancel" },
         {
           text: "Tak, rozwiąż",
-          onPress: () => {
-            // tu trzeba jeszcze dodać obsluge
-            // packageService.updatePackage(packageData.id, {
-            //   status: "problem solved",
-            // });
-            navigation.goBack();
+          onPress: async () => {
+            try {
+              setIsSubmitting(true);
+              await packageService.updatePackage(packageData.id, {
+                status: "registered",
+              });
+              Alert.alert("Sukces", "Zgłoszenie zostało rozwiązane.", [
+                { text: "OK", onPress: () => navigation.goBack() },
+              ]);
+            } catch (error) {
+              console.error(error);
+              Alert.alert(
+                "Błąd",
+                "Nie udało się zaktualizować statusu paczki.",
+              );
+            } finally {
+              setIsSubmitting(false);
+            }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -84,15 +108,19 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
             <Card.Content>
               <Text
                 variant="bodyMedium"
-                style={{ color: theme.colors.onErrorContainer }}
+                style={{
+                  color: theme.colors.onErrorContainer,
+                  marginBottom: 10,
+                }}
               >
-                Pracownik zgłosił problem z tą przesyłką. Wymagana interwencja
-                administratora.
+                {(packageData as any).problemDescription ||
+                  "Pracownik zgłosił problem z tą przesyłką. Wymagana interwencja administratora."}
               </Text>
               <Button
                 mode="contained"
                 buttonColor={theme.colors.error}
-                style={{ marginTop: 10 }}
+                loading={isSubmitting}
+                disabled={isSubmitting}
                 onPress={handleResolveProblem}
               >
                 Rozwiąż zgłoszenie
@@ -110,18 +138,15 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
         <View style={styles.adminActions}>
           <Button
             mode="outlined"
-            icon="pencil"
-            onPress={() => console.log("Nawigacja do edycji (TODO)")}
-            style={styles.actionButton}
-          >
-            Edytuj dane
-          </Button>
-          <Button
-            mode="outlined"
             icon="delete"
             textColor={theme.colors.error}
-            style={[styles.actionButton, { borderColor: theme.colors.error }]}
+            style={[
+              styles.actionButton,
+              { borderColor: theme.colors.error, width: "100%" },
+            ]}
             onPress={handleDelete}
+            loading={isSubmitting}
+            disabled={isSubmitting}
           >
             Usuń rekord
           </Button>
@@ -143,10 +168,10 @@ const styles = StyleSheet.create({
   },
   adminActions: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     marginBottom: 40,
   },
-  actionButton: { width: "48%" },
+  actionButton: {},
 });
 
 export default PackageDetailsScreen;
