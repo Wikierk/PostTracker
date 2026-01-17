@@ -38,8 +38,24 @@ const AdminUserFormScreen = ({ route, navigation }: Props) => {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Błąd", "Podaj prawidłowy adres email.");
+      return;
+    }
+
+    if (fullName.trim().length < 3) {
+      Alert.alert("Błąd", "Imię i nazwisko musi mieć co najmniej 3 znaki.");
+      return;
+    }
+
     if (!isEdit && !password.trim()) {
       Alert.alert("Błąd", "Hasło jest wymagane przy tworzeniu użytkownika.");
+      return;
+    }
+
+    if (password.trim() && password.length < 6) {
+      Alert.alert("Błąd", "Hasło musi mieć co najmniej 6 znaków.");
       return;
     }
 

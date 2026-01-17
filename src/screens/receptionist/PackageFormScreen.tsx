@@ -152,6 +152,21 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
       return;
     }
 
+    if (trackingNumber.trim().length < 5) {
+      Alert.alert("Błąd", "Numer przesyłki musi mieć co najmniej 5 znaków.");
+      return;
+    }
+
+    if (sender.trim().length < 3) {
+      Alert.alert("Błąd", "Nazwa nadawcy musi mieć co najmniej 3 znaki.");
+      return;
+    }
+
+    if (pickupPoint.trim().length < 3) {
+      Alert.alert("Błąd", "Nazwa punktu odbioru musi mieć co najmniej 3 znaki.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (isUpdate && packageData) {

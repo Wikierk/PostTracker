@@ -24,6 +24,17 @@ const LoginScreen = () => {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Błąd", "Podaj prawidłowy adres email.");
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert("Błąd", "Hasło musi mieć co najmniej 6 znaków.");
+      return;
+    }
+
     try {
       setLoading(true);
       await login(email, password);

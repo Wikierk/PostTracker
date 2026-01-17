@@ -44,12 +44,41 @@ const PickupPointFormScreen = ({ navigation, route }: Props) => {
       return;
     }
 
+    if (name.trim().length < 3) {
+      Alert.alert("Błąd", "Nazwa punktu musi mieć co najmniej 3 znaki.");
+      return;
+    }
+
+    const lat = parseFloat(latitude);
+    const lon = parseFloat(longitude);
+
+    if (isNaN(lat) || isNaN(lon)) {
+      Alert.alert("Błąd", "Współrzędne muszą być liczbami.");
+      return;
+    }
+
+    if (lat < -90 || lat > 90) {
+      Alert.alert(
+        "Błąd",
+        "Szerokość geograficzna musi być w zakresie -90 do 90.",
+      );
+      return;
+    }
+
+    if (lon < -180 || lon > 180) {
+      Alert.alert(
+        "Błąd",
+        "Długość geograficzna musi być w zakresie -180 do 180.",
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
-        name,
-        latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude),
+        name: name.trim(),
+        latitude: lat,
+        longitude: lon,
       };
 
       if (mode === "create") {
