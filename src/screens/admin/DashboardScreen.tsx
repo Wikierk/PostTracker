@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { View, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
 import { Card, Text, Button, useTheme, Avatar } from "react-native-paper";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -27,7 +27,7 @@ const AdminDashboardScreen = () => {
         }
       };
       fetchStats();
-    }, [])
+    }, []),
   );
 
   return (
@@ -35,93 +35,95 @@ const AdminDashboardScreen = () => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       edges={["top", "left", "right"]}
     >
-      <Text variant="headlineMedium" style={styles.title}>
-        Panel Administratora
-      </Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text variant="headlineMedium" style={styles.title}>
+          Panel Administratora
+        </Text>
 
-      <View style={styles.statsRow}>
-        <Card style={styles.card}>
-          <Card.Content style={styles.cardContent}>
-            {loading || stats == null ? (
-              <ActivityIndicator size="small" />
-            ) : (
-              <>
-                <Avatar.Icon
-                  size={48}
-                  icon="account-group"
-                  style={{ backgroundColor: theme.colors.secondaryContainer }}
-                  color={theme.colors.onSecondaryContainer}
-                />
-                <Text variant="titleLarge" style={styles.statNumber}>
-                  {stats.employeesCount}
-                </Text>
-                <Text variant="bodySmall" style={styles.statLabel}>
-                  Pracowników
-                </Text>
-              </>
-            )}
-          </Card.Content>
-        </Card>
+        <View style={styles.statsRow}>
+          <Card style={styles.card}>
+            <Card.Content style={styles.cardContent}>
+              {loading || stats == null ? (
+                <ActivityIndicator size="small" />
+              ) : (
+                <>
+                  <Avatar.Icon
+                    size={48}
+                    icon="account-group"
+                    style={{ backgroundColor: theme.colors.secondaryContainer }}
+                    color={theme.colors.onSecondaryContainer}
+                  />
+                  <Text variant="titleLarge" style={styles.statNumber}>
+                    {stats.employeesCount}
+                  </Text>
+                  <Text variant="bodySmall" style={styles.statLabel}>
+                    Pracowników
+                  </Text>
+                </>
+              )}
+            </Card.Content>
+          </Card>
 
-        <Card style={styles.card}>
-          <Card.Content style={styles.cardContent}>
-            {loading || stats == null ? (
-              <ActivityIndicator size="small" />
-            ) : (
-              <>
-                <Avatar.Icon
-                  size={48}
-                  icon="package-variant"
-                  style={{ backgroundColor: theme.colors.secondaryContainer }}
-                  color={theme.colors.onSecondaryContainer}
-                />
-                <Text variant="titleLarge" style={styles.statNumber}>
-                  {stats.packagesThisMonth}
-                </Text>
-                <Text variant="bodySmall" style={styles.statLabel}>
-                  Paczki (Msc)
-                </Text>
-              </>
-            )}
-          </Card.Content>
-        </Card>
-      </View>
+          <Card style={styles.card}>
+            <Card.Content style={styles.cardContent}>
+              {loading || stats == null ? (
+                <ActivityIndicator size="small" />
+              ) : (
+                <>
+                  <Avatar.Icon
+                    size={48}
+                    icon="package-variant"
+                    style={{ backgroundColor: theme.colors.secondaryContainer }}
+                    color={theme.colors.onSecondaryContainer}
+                  />
+                  <Text variant="titleLarge" style={styles.statNumber}>
+                    {stats.packagesThisMonth}
+                  </Text>
+                  <Text variant="bodySmall" style={styles.statLabel}>
+                    Paczki (Msc)
+                  </Text>
+                </>
+              )}
+            </Card.Content>
+          </Card>
+        </View>
 
-      <Text variant="titleMedium" style={styles.subtitle}>
-        Zarządzanie Systemem
-      </Text>
+        <Text variant="titleMedium" style={styles.subtitle}>
+          Zarządzanie Systemem
+        </Text>
 
-      <Button
-        mode="contained"
-        icon="account-multiple-plus"
-        style={styles.button}
-        contentStyle={{ height: 55 }}
-        onPress={() => navigation.getParent()?.navigate("AdminUsers")}
-      >
-        Zarządzaj Użytkownikami
-      </Button>
+        <Button
+          mode="contained"
+          icon="account-multiple-plus"
+          style={styles.button}
+          contentStyle={{ height: 55 }}
+          onPress={() => navigation.navigate("AdminUsers")}
+        >
+          Zarządzaj Użytkownikami
+        </Button>
 
-      <Button
-        mode="outlined"
-        icon="package-variant-closed"
-        style={styles.button}
-        contentStyle={{ height: 55 }}
-        onPress={() =>
-          navigation.navigate("AdminApp", { screen: "PackagesList" })
-        }
-      >
-        Przeglądaj Wszystkie Paczki
-      </Button>
+        <Button
+          mode="outlined"
+          icon="map-marker-multiple"
+          style={styles.button}
+          contentStyle={{ height: 55 }}
+          onPress={() => navigation.navigate("AdminPickupPointsList")}
+        >
+          Zarządzaj Punktami Odbioru
+        </Button>
 
-      <Button
-        mode="outlined"
-        icon="file-chart"
-        style={styles.button}
-        contentStyle={{ height: 55 }}
-        onPress={() => console.log("Generowanie raportów")}
-      >
-        Generuj Raporty
-      </Button>
+        <Button
+          mode="outlined"
+          icon="package-variant-closed"
+          style={styles.button}
+          contentStyle={{ height: 55 }}
+          onPress={() =>
+            navigation.navigate("AdminApp", { screen: "PackagesList" })
+          }
+        >
+          Przeglądaj Wszystkie Paczki
+        </Button>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -129,6 +131,8 @@ const AdminDashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
   },
   title: {

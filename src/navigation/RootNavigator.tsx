@@ -11,7 +11,6 @@ import EmployeeNavigator from "./EmployeeNavigator";
 import LoginScreen from "../screens/auth/LoginScreen";
 
 import AdminPackageDetailsScreen from "../screens/admin/PackageDetailsScreen";
-import AdminPackageFormScreen from "../screens/admin/PackageFormScreen";
 
 import ReceptionistPackageDetailsScreen from "../screens/receptionist/PackageDetailsScreen.tsx";
 import ReceptionistPackageFormScreen from "../screens/receptionist/PackageFormScreen";
@@ -23,6 +22,8 @@ import ReportProblemScreen from "../screens/employee/ReportProblemScreen";
 
 import UsersListScreen from "../screens/admin/UsersListScreen";
 import UserFormScreen from "../screens/admin/UserFormScreen";
+import PickupPointFormScreen from "../screens/admin/PickupPointFormScreen";
+import PickupPointsListScreen from "../screens/admin/PickupPointsListScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -56,16 +57,6 @@ const RootNavigator = () => {
           />
 
           <Stack.Screen
-            name="PackageForm"
-            component={AdminPackageFormScreen}
-            options={{
-              title: "Dodaj Przesyłkę",
-              headerShown: true,
-              presentation: "modal",
-            }}
-          />
-
-          <Stack.Screen
             name="AdminUsers"
             component={UsersListScreen}
             options={{
@@ -74,12 +65,31 @@ const RootNavigator = () => {
               headerBackTitle: "Wróć",
             }}
           />
-
           <Stack.Screen
             name="AdminUserForm"
             component={UserFormScreen}
             options={{
               title: "Użytkownik",
+              headerShown: true,
+              presentation: "modal",
+              headerBackTitle: "Wróć",
+            }}
+          />
+
+          <Stack.Screen
+            name="AdminPickupPointsList"
+            component={PickupPointsListScreen}
+            options={{
+              title: "Punkty Odbioru",
+              headerShown: true,
+              headerBackTitle: "Wróć",
+            }}
+          />
+          <Stack.Screen
+            name="AdminPickupPointForm"
+            component={PickupPointFormScreen}
+            options={{
+              title: "Edycja Punktu",
               headerShown: true,
               presentation: "modal",
               headerBackTitle: "Wróć",

@@ -1,6 +1,7 @@
 import { NavigatorScreenParams } from "@react-navigation/native";
 import { Package } from "./index";
 import { User } from "../services/userService";
+import { PickupPoint } from "../services/pickupPointService";
 
 export type AdminTabParamList = {
   Dashboard: undefined;
@@ -34,15 +35,18 @@ export type RootStackParamList = {
 
   PackageDetails: { packageData: Package };
 
-  ReportProblem: { packageData: Package };
-
   PackageOrder: { packageData: Package };
 
+  ReportProblem: { packageData: Package };
+
   AdminUsers: undefined;
-  
   AdminUserForm: { mode: "create" } | { mode: "edit"; user: User };
 
-  Register: undefined;
+  AdminPickupPointsList: undefined;
+  AdminPickupPointForm:
+    | { mode: "create" }
+    | { mode: "edit"; point: PickupPoint };
 
+  Register: undefined;
   ReceptionistProblems: undefined;
 };
