@@ -18,17 +18,16 @@ const PackageOrderScreen = ({ route, navigation }: Props) => {
   const theme = useTheme();
   const { packageData } = route.params || {};
 
-  const pickupCode = "530629";
+  const pickupCode = (packageData as any)?.pickupCode || "---";
+  const isProblem = packageData?.status === "problem";
 
   const handleCopyCode = async () => {
     try {
       await Share.share({
-        message: pickupCode,
-        title: "Kod odbioru przesyłki",
+        message: `Mój kod odbioru paczki: ${pickupCode}`,
+        title: "Kod odbioru",
       });
-    } catch (error: any) {
-      Alert.alert("Błąd", "Nie udało się skopiować kodu.");
-    }
+    } catch (error: any) {}
   };
 
   const handleReportProblem = () => {
@@ -43,42 +42,72 @@ const PackageOrderScreen = ({ route, navigation }: Props) => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Card style={styles.readyCard}>
+        <Card
+          style={[
+            styles.readyCard,
+            isProblem && { backgroundColor: theme.colors.errorContainer },
+          ]}
+        >
           <Card.Content style={styles.statusHeader}>
             <View style={{ flex: 1, paddingRight: 10 }}>
-              <Text variant="headlineSmall" style={styles.readyText}>
-                GOTOWA DO ODBIORU
+              <Text
+                variant="headlineSmall"
+                style={[
+                  styles.readyText,
+                  isProblem && { color: theme.colors.onErrorContainer },
+                ]}
+              >
+                {isProblem ? "ZGŁOSZONO PROBLEM" : "GOTOWA DO ODBIORU"}
               </Text>
-              <Text variant="bodySmall" style={{ color: "#155724" }}>
-                Udaj się do punktu odbioru
+              <Text
+                variant="bodySmall"
+                style={{
+                  color: isProblem ? theme.colors.onErrorContainer : "#155724",
+                  opacity: 0.8,
+                }}
+              >
+                {isProblem
+                  ? "Twoje zgłoszenie jest weryfikowane przez obsługę."
+                  : "Udaj się do punktu odbioru"}
               </Text>
             </View>
             <IconButton
-              icon="package-variant-closed"
+              icon={isProblem ? "alert-circle" : "package-variant-closed"}
               size={40}
-              iconColor={theme.colors.primary}
+              iconColor={isProblem ? theme.colors.error : theme.colors.primary}
               style={{ margin: 0 }}
             />
           </Card.Content>
         </Card>
 
-        <Card style={styles.pickupCodeCard}>
-          <Card.Title title="KOD ODBIORU" titleStyle={styles.pickupCodeTitle} />
-          <Card.Content style={styles.pickupCodeContent}>
-            <Text variant="displayMedium" style={styles.pickupCodeText}>
-              {pickupCode}
-            </Text>
-            <Button
-              mode="contained"
-              icon="content-copy"
-              onPress={handleCopyCode}
-              style={styles.copyButton}
-              labelStyle={styles.copyButtonLabel}
-            >
-              Kopiuj Kod
-            </Button>
-          </Card.Content>
-        </Card>
+        {!isProblem && (
+          <Card style={styles.pickupCodeCard}>
+            <Card.Title
+              title="KOD ODBIORU"
+              titleStyle={styles.pickupCodeTitle}
+            />
+            <Card.Content style={styles.pickupCodeContent}>
+              <Text variant="displayMedium" style={styles.pickupCodeText}>
+                {pickupCode}
+              </Text>
+              <Text
+                variant="bodySmall"
+                style={{ marginBottom: 15, opacity: 0.6 }}
+              >
+                Pokaż ten kod recepcjoniście
+              </Text>
+              <Button
+                mode="contained"
+                icon="content-copy"
+                onPress={handleCopyCode}
+                style={styles.copyButton}
+                labelStyle={styles.copyButtonLabel}
+              >
+                Udostępnij / Kopiuj
+              </Button>
+            </Card.Content>
+          </Card>
+        )}
 
         <Card style={styles.infoCard}>
           <Card.Title title="Szczegóły" titleStyle={{ marginBottom: -10 }} />
@@ -93,16 +122,18 @@ const PackageOrderScreen = ({ route, navigation }: Props) => {
           </Card.Content>
         </Card>
 
-        <Button
-          mode="contained"
-          icon="alert-circle-outline"
-          onPress={handleReportProblem}
-          style={styles.problemButton}
-          buttonColor={theme.colors.error}
-          labelStyle={styles.confirmButtonLabel}
-        >
-          Zgłoś problem z przesyłką
-        </Button>
+        {!isProblem && (
+          <Button
+            mode="contained"
+            icon="alert-circle-outline"
+            onPress={handleReportProblem}
+            style={styles.problemButton}
+            buttonColor={theme.colors.error}
+            labelStyle={styles.confirmButtonLabel}
+          >
+            Zgłoś problem z przesyłką
+          </Button>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

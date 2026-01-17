@@ -30,19 +30,17 @@ const PackageListScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"registered" | "delivered">(
-    "registered"
+    "registered",
   );
 
   const fetchPackages = useCallback(async () => {
     try {
-      const data = await packageService.getAllPackages(searchQuery);
+      const data = await packageService.getAllPackages(
+        searchQuery,
+        user.userId,
+      );
 
-      const userId = (user as any)?.id; 
-      const mine = userId
-        ? data.filter((pkg) => pkg.recipient?.id === userId)
-        : data; 
-
-      const filtered = mine.filter((pkg) => {
+      const filtered = data.filter((pkg) => {
         if (filterStatus === "registered") {
           return pkg.status === "registered" || pkg.status === "problem";
         }
@@ -51,23 +49,23 @@ const PackageListScreen = () => {
 
       filtered.sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
 
       setPackages(filtered);
     } catch (error) {
-      console.error(error);
+      console.error("Błąd pobierania paczek pracownika:", error);
     } finally {
       setInitialLoading(false);
       setRefreshing(false);
     }
-  }, [searchQuery, filterStatus, user]);
+  }, [searchQuery, filterStatus, user.userId]);
 
   useFocusEffect(
     useCallback(() => {
       if (packages.length === 0) setInitialLoading(true);
       fetchPackages();
-    }, [fetchPackages])
+    }, [fetchPackages]),
   );
 
   const onPullToRefresh = () => {
@@ -120,7 +118,7 @@ const PackageListScreen = () => {
             onPress={() => setFilterStatus("delivered")}
             showSelectedOverlay
           >
-            Historia (Odebrane)
+            Historia
           </Chip>
         </View>
       </View>
@@ -137,7 +135,7 @@ const PackageListScreen = () => {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           ItemSeparatorComponent={() => <Divider />}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 80 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -149,8 +147,8 @@ const PackageListScreen = () => {
               {searchQuery
                 ? "Brak wyników wyszukiwania"
                 : filterStatus === "registered"
-                ? "Nie masz przesyłek do odbioru"
-                : "Brak przesyłek w historii"}
+                  ? "Brak przesyłek do odbioru"
+                  : "Brak historii odbiorów"}
             </Text>
           }
         />

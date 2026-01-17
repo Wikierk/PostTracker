@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, Alert } from "react-native";
-import {
-  Button,
-  Card,
-  RadioButton,
-  Text,
-  TextInput,
-  useTheme,
-} from "react-native-paper";
+import { Button, Card, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
@@ -19,22 +12,27 @@ const ReportProblemScreen = ({ route, navigation }: Props) => {
   const theme = useTheme();
   const { packageData } = route.params;
 
-  const [type, setType] = useState<"damaged" | "other">("damaged");
   const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async () => {
     if (!description.trim()) {
       Alert.alert("Brak opisu", "Opisz problem, zanim wyślesz zgłoszenie.");
       return;
     }
-  try {
-    await packageService.reportProblem(packageData.id, description);
-    Alert.alert("Wysłano", "Twoje zgłoszenie zostało zapisane.");
-    navigation.goBack();
-  } catch (e) {
-    Alert.alert("Błąd", "Nie udało się wysłać zgłoszenia.");
-  }
-};
+
+    setLoading(true);
+    try {
+      await packageService.reportProblem(packageData.id, description);
+      Alert.alert("Wysłano", "Twoje zgłoszenie zostało zapisane.", [
+        { text: "OK", onPress: () => navigation.goBack() },
+      ]);
+    } catch (e) {
+      Alert.alert("Błąd", "Nie udało się wysłać zgłoszenia.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView
@@ -55,31 +53,22 @@ const ReportProblemScreen = ({ route, navigation }: Props) => {
               Punkt odbioru: {packageData.pickupPoint}
             </Text>
 
-            <Text variant="labelLarge" style={{ marginTop: 16 }}>
-              Rodzaj problemu
-            </Text>
-
-            <RadioButton.Group
-              onValueChange={(v) => setType(v as "damaged" | "other")}
-              value={type}
-            >
-              <RadioButton.Item label="Paczka uszkodzona" value="damaged" />
-              <RadioButton.Item label="Inny problem" value="other" />
-            </RadioButton.Group>
-
             <TextInput
               label="Opis problemu"
+              placeholder="np. Paczka jest uszkodzona, otwarta..."
               mode="outlined"
               value={description}
               onChangeText={setDescription}
               multiline
               numberOfLines={5}
-              style={{ marginTop: 12 }}
+              style={{ marginTop: 20 }}
             />
 
             <Button
               mode="contained"
               onPress={onSubmit}
+              loading={loading}
+              disabled={loading}
               style={{ marginTop: 16, borderRadius: 10 }}
             >
               Wyślij zgłoszenie
@@ -89,6 +78,7 @@ const ReportProblemScreen = ({ route, navigation }: Props) => {
               mode="text"
               onPress={() => navigation.goBack()}
               style={{ marginTop: 8 }}
+              disabled={loading}
             >
               Anuluj
             </Button>
