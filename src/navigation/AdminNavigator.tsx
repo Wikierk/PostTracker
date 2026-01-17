@@ -7,9 +7,6 @@ import AdminDashboardScreen from "../screens/admin/DashboardScreen";
 import PackageListScreen from "../screens/admin/PackageListScreen";
 import SettingsScreen from "../screens/shared/SettingsScreen";
 
-// TODO: W przyszłości dodać UsersListScreen, na razie placeholder
-const UsersPlaceholder = () => <SettingsScreen />;
-
 const AdminTab = createBottomTabNavigator<AdminTabParamList>();
 
 const AdminNavigator = () => {
@@ -35,17 +32,6 @@ const AdminNavigator = () => {
           ),
         }}
       />
-      {/* <AdminTab.Screen
-        name="UsersList"
-        component={UsersPlaceholder}
-        options={{
-          tabBarLabel: "Użytkownicy",
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="account-group" color={color} size={size} />
-          ),
-        }}
-      /> 
-      */}
       <AdminTab.Screen
         name="Settings"
         component={SettingsScreen}

@@ -11,13 +11,18 @@ import EmployeeNavigator from "./EmployeeNavigator";
 import LoginScreen from "../screens/auth/LoginScreen";
 
 import AdminPackageDetailsScreen from "../screens/admin/PackageDetailsScreen";
-
-import EmployeePackageDetailsScreen from "../screens/employee/PackageDetailsScreen";
-import PackageOrderScreen from "../screens/employee/PackageOrderScreen";
 import AdminPackageFormScreen from "../screens/admin/PackageFormScreen";
+
 import ReceptionistPackageDetailsScreen from "../screens/receptionist/PackageDetailsScreen.tsx";
 import ReceptionistPackageFormScreen from "../screens/receptionist/PackageFormScreen";
 import ReceptionistProblemsScreen from "../screens/receptionist/ProblemsScreen";
+
+import EmployeePackageDetailsScreen from "../screens/employee/PackageDetailsScreen";
+import PackageOrderScreen from "../screens/employee/PackageOrderScreen";
+import ReportProblemScreen from "../screens/employee/ReportProblemScreen";
+
+import UsersListScreen from "../screens/admin/UsersListScreen";
+import UserFormScreen from "../screens/admin/UserFormScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -49,6 +54,7 @@ const RootNavigator = () => {
               headerBackTitle: "Wróć",
             }}
           />
+
           <Stack.Screen
             name="PackageForm"
             component={AdminPackageFormScreen}
@@ -56,6 +62,27 @@ const RootNavigator = () => {
               title: "Dodaj Przesyłkę",
               headerShown: true,
               presentation: "modal",
+            }}
+          />
+
+          <Stack.Screen
+            name="AdminUsers"
+            component={UsersListScreen}
+            options={{
+              title: "Użytkownicy",
+              headerShown: true,
+              headerBackTitle: "Wróć",
+            }}
+          />
+
+          <Stack.Screen
+            name="AdminUserForm"
+            component={UserFormScreen}
+            options={{
+              title: "Użytkownik",
+              headerShown: true,
+              presentation: "modal",
+              headerBackTitle: "Wróć",
             }}
           />
         </Stack.Group>
@@ -75,6 +102,7 @@ const RootNavigator = () => {
               headerBackTitle: "Wróć",
             }}
           />
+
           <Stack.Screen
             name="PackageForm"
             component={ReceptionistPackageFormScreen}
@@ -84,6 +112,7 @@ const RootNavigator = () => {
               presentation: "modal",
             }}
           />
+
           <Stack.Screen
             name="ReceptionistProblems"
             component={ReceptionistProblemsScreen}
@@ -113,6 +142,17 @@ const RootNavigator = () => {
             component={PackageOrderScreen}
             options={{
               title: "Odbiór Przesyłki",
+              headerShown: true,
+              headerBackTitle: "Wróć",
+              presentation: "modal",
+            }}
+          />
+
+          <Stack.Screen
+            name="ReportProblem"
+            component={ReportProblemScreen}
+            options={{
+              title: "Zgłoś problem",
               headerShown: true,
               headerBackTitle: "Wróć",
               presentation: "modal",

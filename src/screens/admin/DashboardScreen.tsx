@@ -96,7 +96,7 @@ const AdminDashboardScreen = () => {
         icon="account-multiple-plus"
         style={styles.button}
         contentStyle={{ height: 55 }}
-        onPress={() => console.log("Nawigacja do zarządzania użytkownikami")}
+        onPress={() => navigation.getParent()?.navigate("AdminUsers")}
       >
         Zarządzaj Użytkownikami
       </Button>

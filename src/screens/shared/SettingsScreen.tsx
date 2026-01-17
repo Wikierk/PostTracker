@@ -11,12 +11,14 @@ import {
 } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../hooks/useAuth";
+import { useThemeMode } from "../../context/ThemeContext";
 
 const SettingsScreen = () => {
   const { user, logout } = useAuth();
 
   const theme = useTheme();
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const { mode, toggle } = useThemeMode();
+  const isDarkTheme = mode === "dark";
 
   const getRoleName = () => {
     switch (user.role) {
@@ -39,7 +41,7 @@ const SettingsScreen = () => {
   };
 
   const handleThemeToggle = () => {
-    setIsDarkTheme((prev) => !prev);
+  toggle();
   };
 
   return (
