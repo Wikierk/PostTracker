@@ -7,6 +7,8 @@ import {
   Dialog,
   TextInput,
   Text,
+  Card,
+  Avatar,
 } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types/navigation";
@@ -56,6 +58,42 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
     }
   };
 
+  const handleResolveProblem = () => {
+    const description =
+      (packageData as any).problemDescription || "Brak opisu.";
+
+    Alert.alert(
+      "Rozwiąż problem",
+      `Zgłoszenie: "${description}"\n\nCzy problem został wyjaśniony? Paczka wróci do statusu 'W RECEPCJI' i będzie można ją wydać.`,
+      [
+        { text: "Anuluj", style: "cancel" },
+        {
+          text: "Tak, rozwiąż",
+          onPress: async () => {
+            try {
+              setLoading(true);
+              await packageService.updatePackage(packageData.id, {
+                status: "registered",
+              });
+              setStatus("registered");
+              Alert.alert(
+                "Sukces",
+                "Zgłoszenie rozwiązane. Możesz teraz wydać paczkę.",
+              );
+            } catch (error: any) {
+              const msg =
+                error.response?.data?.message ||
+                "Nie udało się zaktualizować statusu.";
+              Alert.alert("Błąd", msg);
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -64,7 +102,52 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <PackageStatusCard status={status} />
 
-        {status !== "delivered" && (
+        {status === "problem" && (
+          <Card
+            style={[
+              styles.card,
+              { backgroundColor: theme.colors.errorContainer },
+            ]}
+          >
+            <Card.Title
+              title="Zgłoszono Problem"
+              titleStyle={{
+                color: theme.colors.onErrorContainer,
+                fontWeight: "bold",
+              }}
+              left={(props) => (
+                <Avatar.Icon
+                  {...props}
+                  icon="alert"
+                  style={{ backgroundColor: theme.colors.error }}
+                />
+              )}
+            />
+            <Card.Content>
+              <Text
+                variant="bodyMedium"
+                style={{
+                  color: theme.colors.onErrorContainer,
+                  marginBottom: 10,
+                }}
+              >
+                {(packageData as any).problemDescription ||
+                  "Pracownik zgłosił problem z tą przesyłką."}
+              </Text>
+              <Button
+                mode="contained"
+                buttonColor={theme.colors.error}
+                loading={loading}
+                disabled={loading}
+                onPress={handleResolveProblem}
+              >
+                Rozwiąż zgłoszenie
+              </Button>
+            </Card.Content>
+          </Card>
+        )}
+
+        {status !== "delivered" && status !== "problem" && (
           <Button
             mode="contained"
             icon="hand-coin"
@@ -130,6 +213,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: 16 },
   mainButton: { marginBottom: 20 },
+  card: { marginBottom: 20 },
   imageContainer: { alignItems: "center", marginBottom: 20 },
   packageImage: {
     width: "100%",

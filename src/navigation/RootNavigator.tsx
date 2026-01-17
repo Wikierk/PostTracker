@@ -14,7 +14,6 @@ import AdminPackageDetailsScreen from "../screens/admin/PackageDetailsScreen";
 
 import ReceptionistPackageDetailsScreen from "../screens/receptionist/PackageDetailsScreen.tsx";
 import ReceptionistPackageFormScreen from "../screens/receptionist/PackageFormScreen";
-import ReceptionistProblemsScreen from "../screens/receptionist/ProblemsScreen";
 
 import EmployeePackageDetailsScreen from "../screens/employee/PackageDetailsScreen";
 import PackageOrderScreen from "../screens/employee/PackageOrderScreen";
@@ -120,16 +119,6 @@ const RootNavigator = () => {
               title: "Rejestracja",
               headerShown: true,
               presentation: "modal",
-            }}
-          />
-
-          <Stack.Screen
-            name="ReceptionistProblems"
-            component={ReceptionistProblemsScreen}
-            options={{
-              title: "Zgłoszone Problemy",
-              headerShown: true,
-              headerBackTitle: "Panel",
             }}
           />
         </Stack.Group>

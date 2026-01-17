@@ -37,7 +37,7 @@ const DashboardScreen = () => {
         }
       };
       fetchStats();
-    }, [])
+    }, []),
   );
 
   return (
@@ -106,16 +106,6 @@ const DashboardScreen = () => {
         onPress={() => navigation.navigate("PackageForm")}
       >
         Rejestracja ręczna
-      </Button>
-      <Button
-        mode="outlined"
-        icon="alert-circle-outline"
-        style={[styles.button, { borderColor: theme.colors.error }]}
-        textColor={theme.colors.error}
-        contentStyle={{ height: 50 }}
-        onPress={() => navigation.navigate("ReceptionistProblems")}
-      >
-        Zgłoszone Problemy
       </Button>
     </SafeAreaView>
   );

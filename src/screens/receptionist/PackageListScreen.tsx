@@ -1,12 +1,17 @@
-import React, { useState, useCallback } from "react";
-import { FlatList, View, StyleSheet, RefreshControl } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  FlatList,
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import {
   Chip,
   Divider,
   FAB,
   Searchbar,
   useTheme,
-  ActivityIndicator,
   Text,
 } from "react-native-paper";
 import { Package } from "../../types";
@@ -21,14 +26,13 @@ const PackageListScreen = () => {
   const theme = useTheme();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-
-  const [packages, setPackages] = useState<Package[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"registered" | "delivered">(
-    "registered"
-  );
+  const [filterStatus, setFilterStatus] = useState<
+    "registered" | "delivered" | "problem"
+  >("registered");
+  const [packages, setPackages] = useState<Package[]>([]);
 
   const fetchPackages = useCallback(async () => {
     try {
@@ -36,15 +40,17 @@ const PackageListScreen = () => {
 
       const filtered = data.filter((pkg) => {
         if (filterStatus === "registered") {
-          return pkg.status === "registered" || pkg.status === "problem";
-        } else {
+          return pkg.status === "registered";
+        } else if (filterStatus === "delivered") {
           return pkg.status === "delivered";
+        } else if (filterStatus === "problem") {
+          return pkg.status === "problem";
         }
       });
 
       filtered.sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
 
       setPackages(filtered);
@@ -62,7 +68,7 @@ const PackageListScreen = () => {
         setInitialLoading(true);
       }
       fetchPackages();
-    }, [fetchPackages])
+    }, [fetchPackages]),
   );
 
   const onPullToRefresh = () => {
@@ -106,10 +112,19 @@ const PackageListScreen = () => {
           <Chip
             selected={filterStatus === "delivered"}
             mode="outlined"
+            style={{ marginRight: 8 }}
             onPress={() => setFilterStatus("delivered")}
             showSelectedOverlay
           >
-            Historia (Wydane)
+            Wydane
+          </Chip>
+          <Chip
+            selected={filterStatus === "problem"}
+            mode="outlined"
+            onPress={() => setFilterStatus("problem")}
+            showSelectedOverlay
+          >
+            Problem
           </Chip>
         </View>
       </View>
@@ -142,7 +157,6 @@ const PackageListScreen = () => {
           }
         />
       )}
-
       <FAB
         icon="plus"
         label="Dodaj"

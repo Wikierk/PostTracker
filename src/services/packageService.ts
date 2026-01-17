@@ -58,9 +58,13 @@ export const packageService = {
     return response.data;
   },
 
-  getAllPackages: async (search?: string): Promise<Package[]> => {
+  getAllPackages: async (
+    search?: string,
+    userId?: string,
+  ): Promise<Package[]> => {
     const params: any = {};
     if (search) params.search = search;
+    if (userId) params.userId = userId;
 
     const response = await client.get("/packages", { params });
     return response.data;
