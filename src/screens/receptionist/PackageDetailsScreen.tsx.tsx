@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, Alert, Image } from "react-native";
 import {
   Button,
@@ -11,8 +11,8 @@ import {
   Avatar,
 } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../types/navigation";
-import { PackageStatus } from "../../types";
 import PackageStatusCard from "../../components/PackageStatusCard";
 import PackageDetailsCard from "../../components/PackageDetailsCard";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,14 +22,41 @@ type Props = NativeStackScreenProps<RootStackParamList, "PackageDetails">;
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-const PackageDetailsScreen = ({ route, navigation }: Props) => {
+const ReceptionistPackageDetailsScreen = ({ route, navigation }: Props) => {
   const theme = useTheme();
-  const { packageData } = route.params;
-  const [status, setStatus] = useState<PackageStatus>(packageData.status);
+  const { packageData: initialPackageData } = route.params;
+
+  const [currentPackage, setCurrentPackage] = useState(initialPackageData);
 
   const [isDialogVisible, setIsDialogVisible] = useState(false);
   const [pickupCode, setPickupCode] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const fetchPackageDetails = async () => {
+        try {
+          const updatedData = await packageService.getPackageById(
+            initialPackageData.id,
+          );
+
+          if (isActive) {
+            setCurrentPackage(updatedData);
+          }
+        } catch (error) {
+          console.error("Błąd odświeżania danych:", error);
+        }
+      };
+
+      fetchPackageDetails();
+
+      return () => {
+        isActive = false;
+      };
+    }, [initialPackageData.id]),
+  );
 
   const showDialog = () => setIsDialogVisible(true);
   const hideDialog = () => {
@@ -45,13 +72,17 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
 
     setLoading(true);
     try {
-      await packageService.deliverPackage(packageData.id, pickupCode);
-
-      setStatus("delivered");
+      await packageService.deliverPackage(currentPackage.id, pickupCode);
+      setCurrentPackage((prev) => ({ ...prev, status: "delivered" }));
       hideDialog();
       Alert.alert("Sukces", "Paczka została wydana pomyślnie.");
     } catch (error: any) {
-      const msg = error.response?.data?.message || "Wystąpił błąd.";
+      let msg = "Wystąpił błąd.";
+      if (error.response?.data?.message) {
+        msg = Array.isArray(error.response.data.message)
+          ? error.response.data.message[0]
+          : error.response.data.message;
+      }
       Alert.alert("Błąd", msg);
     } finally {
       setLoading(false);
@@ -60,11 +91,11 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
 
   const handleResolveProblem = () => {
     const description =
-      (packageData as any).problemDescription || "Brak opisu.";
+      (currentPackage as any).problemDescription || "Brak opisu problemu.";
 
     Alert.alert(
       "Rozwiąż problem",
-      `Zgłoszenie: "${description}"\n\nCzy problem został wyjaśniony? Paczka wróci do statusu 'W RECEPCJI' i będzie można ją wydać.`,
+      `Zgłoszenie: "${description}"\n\nCzy problem został wyjaśniony? Paczka wróci do statusu 'W RECEPCJI' i będzie można ją ponownie wydać.`,
       [
         { text: "Anuluj", style: "cancel" },
         {
@@ -72,18 +103,20 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
           onPress: async () => {
             try {
               setLoading(true);
-              await packageService.updatePackage(packageData.id, {
-                status: "registered",
-              });
-              setStatus("registered");
+              await packageService.resolveProblem(currentPackage.id);
+              setCurrentPackage((prev) => ({ ...prev, status: "registered" }));
+
               Alert.alert(
                 "Sukces",
                 "Zgłoszenie rozwiązane. Możesz teraz wydać paczkę.",
               );
             } catch (error: any) {
-              const msg =
-                error.response?.data?.message ||
-                "Nie udało się zaktualizować statusu.";
+              let msg = "Wystąpił błąd.";
+              if (error.response?.data?.message) {
+                msg = Array.isArray(error.response.data.message)
+                  ? error.response.data.message[0]
+                  : error.response.data.message;
+              }
               Alert.alert("Błąd", msg);
             } finally {
               setLoading(false);
@@ -93,6 +126,15 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
       ],
     );
   };
+
+  const handleEdit = () => {
+    navigation.navigate("PackageForm", {
+      packageData: currentPackage,
+      isUpdate: true,
+    });
+  };
+
+  const status = currentPackage.status;
 
   return (
     <SafeAreaView
@@ -131,7 +173,7 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
                   marginBottom: 10,
                 }}
               >
-                {(packageData as any).problemDescription ||
+                {(currentPackage as any).problemDescription ||
                   "Pracownik zgłosił problem z tą przesyłką."}
               </Text>
               <Button
@@ -159,17 +201,26 @@ const PackageDetailsScreen = ({ route, navigation }: Props) => {
           </Button>
         )}
 
-        {packageData.photoUrl && (
+        {currentPackage.photoUrl && (
           <View style={styles.imageContainer}>
             <Image
-              source={{ uri: `${API_URL}/${packageData.photoUrl}` }}
+              source={{ uri: `${API_URL}/${currentPackage.photoUrl}` }}
               style={styles.packageImage}
               resizeMode="cover"
             />
           </View>
         )}
 
-        <PackageDetailsCard package={packageData} />
+        <PackageDetailsCard package={currentPackage} />
+
+        <Button
+          mode="outlined"
+          icon="pencil"
+          onPress={handleEdit}
+          style={styles.editButton}
+        >
+          Edytuj dane przesyłki
+        </Button>
       </ScrollView>
 
       <Portal>
@@ -213,7 +264,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: 16 },
   mainButton: { marginBottom: 20 },
-  card: { marginBottom: 20 },
   imageContainer: { alignItems: "center", marginBottom: 20 },
   packageImage: {
     width: "100%",
@@ -223,6 +273,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
   },
+  card: { marginBottom: 16 },
+  editButton: {
+    marginTop: 10,
+    marginBottom: 30,
+  },
 });
 
-export default PackageDetailsScreen;
+export default ReceptionistPackageDetailsScreen;

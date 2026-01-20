@@ -112,4 +112,9 @@ export const packageService = {
     });
     return response.data;
   },
+
+  resolveProblem: async (packageId: string) => {
+    const response = await client.put(`/packages/${packageId}/resolve-problem`);
+    return response.data;
+  },
 };

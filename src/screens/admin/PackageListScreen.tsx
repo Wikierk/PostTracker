@@ -50,7 +50,7 @@ const PackageListScreen = () => {
 
       filtered.sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
 
       setPackages(filtered);
@@ -68,7 +68,7 @@ const PackageListScreen = () => {
         setInitialLoading(true);
       }
       fetchPackages();
-    }, [fetchPackages])
+    }, [fetchPackages]),
   );
 
   const onPullToRefresh = () => {
@@ -157,13 +157,6 @@ const PackageListScreen = () => {
           }
         />
       )}
-      <FAB
-        icon="plus"
-        label="Dodaj"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        color="white"
-        onPress={() => navigation.navigate("PackageForm")}
-      />
     </SafeAreaView>
   );
 };

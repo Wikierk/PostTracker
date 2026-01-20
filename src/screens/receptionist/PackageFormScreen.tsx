@@ -31,17 +31,17 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
   const isUpdate = route.params?.isUpdate || false;
 
   const [trackingNumber, setTrackingNumber] = useState(
-    scannedCode || packageData?.trackingNumber || ""
+    scannedCode || packageData?.trackingNumber || "",
   );
   const [sender, setSender] = useState(packageData?.sender || "");
   const [recipientId, setRecipientId] = useState(
-    packageData?.recipient?.id || ""
+    packageData?.recipient?.id || "",
   );
   const [recipientName, setRecipientName] = useState(
-    packageData?.recipient?.fullName || ""
+    packageData?.recipient?.fullName || "",
   );
   const [pickupPoint, setPickupPoint] = useState(
-    packageData?.pickupPoint || "Recepcja Główna"
+    packageData?.pickupPoint || "Recepcja Główna",
   );
   const [photoUri, setPhotoUri] = useState<string | null>(null);
 
@@ -90,21 +90,21 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
         setPickupPoint(result.point.name);
         Alert.alert(
           "Lokalizacja wykryta",
-          `Znajdujesz się w pobliżu: ${result.point.name}`
+          `Znajdujesz się w pobliżu: ${result.point.name}`,
         );
       } else {
         const rawCoords = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
         setPickupPoint(rawCoords);
         Alert.alert(
           "Nieznana lokalizacja",
-          "Nie wykryto zdefiniowanego punktu odbioru w pobliżu. Wstawiono współrzędne GPS."
+          "Nie wykryto zdefiniowanego punktu odbioru w pobliżu. Wstawiono współrzędne GPS.",
         );
       }
     } catch (error) {
       console.error(error);
       Alert.alert(
         "Błąd",
-        "Nie udało się pobrać lokalizacji lub połączyć z serwerem."
+        "Nie udało się pobrać lokalizacji lub połączyć z serwerem.",
       );
     } finally {
       setIsLocating(false);
@@ -143,7 +143,7 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
   const filteredUsers = usersList.filter(
     (u) =>
       u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase())
+      u.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleSubmit = async () => {
@@ -163,7 +163,10 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
     }
 
     if (pickupPoint.trim().length < 3) {
-      Alert.alert("Błąd", "Nazwa punktu odbioru musi mieć co najmniej 3 znaki.");
+      Alert.alert(
+        "Błąd",
+        "Nazwa punktu odbioru musi mieć co najmniej 3 znaki.",
+      );
       return;
     }
 
@@ -319,15 +322,16 @@ const PackageFormScreen = ({ navigation, route }: Props) => {
               GPS
             </Button>
           </View>
-
-          <Button
-            icon="camera"
-            mode="outlined"
-            onPress={handleTakePhoto}
-            style={styles.photoButton}
-          >
-            {photoUri ? "Zmień zdjęcie" : "Zrób zdjęcie paczki"}
-          </Button>
+          {!isUpdate && (
+            <Button
+              icon="camera"
+              mode="outlined"
+              onPress={handleTakePhoto}
+              style={styles.photoButton}
+            >
+              {photoUri ? "Zmień zdjęcie" : "Zrób zdjęcie paczki"}
+            </Button>
+          )}
 
           {photoUri && (
             <Image source={{ uri: photoUri }} style={styles.previewImage} />
