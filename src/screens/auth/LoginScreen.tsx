@@ -107,6 +107,7 @@ const LoginScreen = () => {
         onChangeText={setPassword}
         secureTextEntry
         style={styles.input}
+        autoCapitalize="none"
         mode="outlined"
         disabled={loading}
       />
